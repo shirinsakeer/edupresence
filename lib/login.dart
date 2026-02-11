@@ -1,10 +1,18 @@
 import 'package:edupresence/forgottpassword.dart';
+import 'package:edupresence/service.dart';
 import 'package:edupresence/signup.dart';
 import 'package:flutter/material.dart';
 
-class Login extends StatelessWidget {
+class Login extends StatefulWidget {
   const Login({super.key});
 
+  @override
+  State<Login> createState() => _LoginState();
+}
+
+class _LoginState extends State<Login> {
+  TextEditingController emailcontroller=TextEditingController();
+  TextEditingController passwordcontroller=TextEditingController();
   @override
   Widget build(BuildContext context) {
     return  Scaffold(
@@ -44,6 +52,7 @@ class Login extends StatelessWidget {
 
       /// Email Field
       TextField(
+        controller: emailcontroller,
         decoration: InputDecoration(
           prefixIcon: const Icon(Icons.email),
           hintText: "Email",
@@ -60,6 +69,7 @@ class Login extends StatelessWidget {
 
       /// Password Field
       TextField(
+        controller: passwordcontroller,
         obscureText: true,
         decoration: InputDecoration(
           prefixIcon: const Icon(Icons.lock),
@@ -99,7 +109,10 @@ class Login extends StatelessWidget {
               borderRadius: BorderRadius.circular(15),
             ),
           ),
-          onPressed: () {},
+          onPressed: () {
+           
+            login(emailcontroller.text, passwordcontroller.text, context); emailcontroller.clear;
+            passwordcontroller.clear;},
           child: const Text(
             "LOGIN",
             style: TextStyle(fontSize: 18,color: Colors.white),

@@ -1,9 +1,19 @@
 import 'package:edupresence/login.dart';
+import 'package:edupresence/service.dart';
 import 'package:flutter/material.dart';
 
-class Signup extends StatelessWidget {
+class Signup extends StatefulWidget {
   const Signup({super.key});
 
+  @override
+  State<Signup> createState() => _SignupState();
+}
+
+class _SignupState extends State<Signup> {
+  TextEditingController namecontroller=TextEditingController();
+  TextEditingController emailcontroller=TextEditingController();
+  TextEditingController passwordcontroller=TextEditingController();
+  TextEditingController confirm_passwordcontroller=TextEditingController();
   @override
   Widget build(BuildContext context) {
     return  Scaffold(
@@ -47,6 +57,7 @@ class Signup extends StatelessWidget {
       //Username
 
       TextField(
+        controller: namecontroller,
         decoration: InputDecoration(
           prefixIcon: const Icon(Icons.email),
           hintText: "Username",
@@ -63,6 +74,7 @@ class Signup extends StatelessWidget {
       
       /// Email Field
       TextField(
+        controller: emailcontroller,
         decoration: InputDecoration(
           prefixIcon: const Icon(Icons.email),
           hintText: "Email",
@@ -79,6 +91,7 @@ class Signup extends StatelessWidget {
 
       /// Password Field
       TextField(
+        controller: passwordcontroller,
         obscureText: true,
         decoration: InputDecoration(
           prefixIcon: const Icon(Icons.lock),
@@ -99,6 +112,7 @@ class Signup extends StatelessWidget {
       //conform password
       /// Password Field
       TextField(
+        controller: confirm_passwordcontroller,
         obscureText: true,
         decoration: InputDecoration(
           prefixIcon: const Icon(Icons.lock),
@@ -129,7 +143,15 @@ class Signup extends StatelessWidget {
               borderRadius: BorderRadius.circular(15),
             ),
           ),
-          onPressed: () {},
+          onPressed: () {
+           
+            
+            register(namecontroller.text, emailcontroller.text, passwordcontroller.text, confirm_passwordcontroller.text, context);
+             namecontroller.clear();
+            emailcontroller.clear();
+            passwordcontroller.clear();
+            confirm_passwordcontroller.clear();
+            },
           child: const Text(
             "Sign Up",
             style: TextStyle(fontSize: 18,color: Colors.white),
