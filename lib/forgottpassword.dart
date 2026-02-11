@@ -1,14 +1,13 @@
-import 'package:edupresence/forgottpassword.dart';
-import 'package:edupresence/signup.dart';
+import 'package:edupresence/login.dart';
 import 'package:flutter/material.dart';
 
-class Login extends StatelessWidget {
-  const Login({super.key});
+class Forgottpassword extends StatelessWidget {
+  const Forgottpassword({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return  Scaffold(
-      body: Center(
+    return Scaffold(
+       body: Center(
         child: Container(
           height: double.infinity,
           width: double.infinity,
@@ -58,35 +57,7 @@ class Login extends StatelessWidget {
 
       const SizedBox(height: 20),
 
-      /// Password Field
-      TextField(
-        obscureText: true,
-        decoration: InputDecoration(
-          prefixIcon: const Icon(Icons.lock),
-          hintText: "Password",
-          filled: true,
-          fillColor: Colors.grey.withOpacity(0.15),
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(15),
-            borderSide: BorderSide.none,
-          ),
-        ),
-      ),
-
-      const SizedBox(height: 15),
-
-      /// Forgot Password
-      Align(
-        alignment: Alignment.centerRight,
-        child: TextButton(
-          onPressed: () {
-            Navigator.push(context, MaterialPageRoute(builder: (context) => Forgottpassword(),));
-          },
-          child: const Text("Forgot Password?",style: TextStyle(color: Colors.black),),
-        ),
-      ),
-
-      const SizedBox(height: 10),
+      
 
       /// Login Button
       SizedBox(
@@ -101,7 +72,7 @@ class Login extends StatelessWidget {
           ),
           onPressed: () {},
           child: const Text(
-            "LOGIN",
+            "Send Link",
             style: TextStyle(fontSize: 18,color: Colors.white),
           ),
         ),
@@ -111,12 +82,12 @@ class Login extends StatelessWidget {
 
        Row(mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Text("Don't have an account?"),
+               
                 GestureDetector(
                   onTap: () {
-                    Navigator.push(context, MaterialPageRoute(builder: (context) => Signup(),));
+                    Navigator.push(context, MaterialPageRoute(builder: (context) => Login(),));
                   },
-                  child: Text("Sign Up",style: TextStyle(fontWeight: FontWeight.bold))),
+                  child: Text("Back to login",style: TextStyle(fontWeight: FontWeight.bold))),
               ],
             ),
     ],
@@ -130,7 +101,6 @@ class Login extends StatelessWidget {
           ),
         ),
       ),
-      
     );
   }
 }
