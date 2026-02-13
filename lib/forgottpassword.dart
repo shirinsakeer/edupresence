@@ -21,7 +21,7 @@ class _ForgottpasswordState extends State<Forgottpassword> {
           
           decoration: BoxDecoration(
             
-          image: DecorationImage(image: AssetImage("assets/bg.jpeg"),fit: BoxFit.fill),
+          image: DecorationImage(image: AssetImage("assets/bg.jpg"),fit: BoxFit.fill),
               
             border: Border.all(color: Colors.white)
           ),
@@ -73,7 +73,7 @@ class _ForgottpasswordState extends State<Forgottpassword> {
         height: 50,
         child: ElevatedButton(
           style: ElevatedButton.styleFrom(
-            backgroundColor: const Color.fromARGB(167, 71, 159, 27),
+            backgroundColor: const Color.fromARGB(167, 122, 205, 243),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(15),
             ),

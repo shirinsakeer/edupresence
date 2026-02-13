@@ -1,3 +1,4 @@
+import 'package:edupresence/home.dart';
 import 'package:edupresence/login.dart';
 import 'package:edupresence/signup.dart';
 import 'package:flutter/material.dart';
