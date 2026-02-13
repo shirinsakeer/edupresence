@@ -30,13 +30,22 @@ class _StudentDashboardState extends State<StudentDashboard> {
         currentIndex: _selectedIndex,
         onTap: (index) => setState(() => _selectedIndex = index),
         type: BottomNavigationBarType.fixed,
-        selectedItemColor: Colors.blue[700],
+        selectedItemColor: const Color(0xFF1A56BE),
         unselectedItemColor: Colors.grey,
+        backgroundColor: Colors.white,
         items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
           BottomNavigationBarItem(
-              icon: Icon(Icons.smart_toy), label: 'AI Chat'),
-          BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
+              icon: Icon(Icons.home_outlined),
+              activeIcon: Icon(Icons.home),
+              label: 'Home'),
+          BottomNavigationBarItem(
+              icon: Icon(Icons.smart_toy_outlined),
+              activeIcon: Icon(Icons.smart_toy),
+              label: 'AI Chat'),
+          BottomNavigationBarItem(
+              icon: Icon(Icons.person_outline),
+              activeIcon: Icon(Icons.person),
+              label: 'Profile'),
         ],
       ),
     );
@@ -49,92 +58,154 @@ class StudentHomeTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final authProvider = Provider.of<AuthProvider>(context);
-    final attendance =
-        authProvider.userData?['attendance'] as Map<String, dynamic>? ?? {};
+    final userData = authProvider.userData;
+    final attendance = userData?['attendance'] as Map<String, dynamic>? ?? {};
 
     int totalDays = attendance.length;
     int presentDays = attendance.values.where((v) => v == 'Present').length;
     double percentage = totalDays == 0 ? 0 : (presentDays / totalDays) * 100;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('My Attendance')),
-      body: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          children: [
-            Card(
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(20)),
-              elevation: 5,
-              child: Container(
-                padding: const EdgeInsets.all(30),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(20),
-                  gradient: const LinearGradient(
-                      colors: [Color(0xFF2196F3), Color(0xFF1976D2)]),
-                ),
-                child: Column(
-                  children: [
-                    const Text('Overall Attendance',
-                        style: TextStyle(color: Colors.white, fontSize: 18)),
-                    const SizedBox(height: 10),
-                    Text('${percentage.toStringAsFixed(1)}%',
-                        style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 48,
-                            fontWeight: FontWeight.bold)),
-                    const SizedBox(height: 10),
-                    Text('$presentDays / $totalDays Days Present',
-                        style: const TextStyle(color: Colors.white70)),
-                  ],
-                ),
+      backgroundColor: const Color(0xFFF8FAFC),
+      appBar: AppBar(
+        title: Image.asset("assets/logo.png",
+            height: 40, errorBuilder: (c, e, s) => const Text("EduPresence")),
+      ),
+      body: CustomScrollView(
+        slivers: [
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('Welcome, ${userData?['name'] ?? 'Student'}',
+                      style: const TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF1E293B))),
+                  const Text('Here is your academic summary',
+                      style: TextStyle(color: Colors.grey)),
+                  const SizedBox(height: 25),
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(25),
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(
+                          colors: [Color(0xFF1A56BE), Color(0xFF3B82F6)]),
+                      borderRadius: BorderRadius.circular(20),
+                      boxShadow: [
+                        BoxShadow(
+                            color: const Color(0xFF1A56BE).withOpacity(0.3),
+                            blurRadius: 15,
+                            offset: const Offset(0, 8))
+                      ],
+                    ),
+                    child: Column(
+                      children: [
+                        const Text('Attendance Score',
+                            style:
+                                TextStyle(color: Colors.white70, fontSize: 16)),
+                        const SizedBox(height: 10),
+                        Text('${percentage.toStringAsFixed(1)}%',
+                            style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 48,
+                                fontWeight: FontWeight.bold)),
+                        const SizedBox(height: 15),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            _miniStat('Present', '$presentDays'),
+                            const SizedBox(width: 20),
+                            _miniStat('Total Days', '$totalDays'),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 35),
+                  const Text("Recent Records",
+                      style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF1E293B))),
+                ],
               ),
             ),
-            const SizedBox(height: 30),
-            const Align(
-                alignment: Alignment.centerLeft,
-                child: Text('Recent History',
-                    style:
-                        TextStyle(fontSize: 18, fontWeight: FontWeight.bold))),
-            const SizedBox(height: 10),
-            Expanded(
-              child: attendance.isEmpty
-                  ? const Center(child: Text('No attendance records yet'))
-                  : ListView.builder(
-                      itemCount: attendance.length,
-                      itemBuilder: (context, index) {
-                        String date = attendance.keys.elementAt(index);
-                        String status = attendance.values.elementAt(index);
-                        return ListTile(
-                          leading: Icon(
-                            status == 'Present'
-                                ? Icons.check_circle
-                                : (status == 'Late'
-                                    ? Icons.access_time_filled
-                                    : Icons.cancel),
-                            color: status == 'Present'
-                                ? Colors.green
-                                : (status == 'Late'
-                                    ? Colors.orange
-                                    : Colors.red),
+          ),
+          attendance.isEmpty
+              ? const SliverFillRemaining(
+                  child: Center(child: Text('No attendance records found.')))
+              : SliverList(
+                  delegate: SliverChildBuilderDelegate(
+                    (context, index) {
+                      String date = attendance.keys.elementAt(index);
+                      String status = attendance.values.elementAt(index);
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 20, vertical: 5),
+                        child: Card(
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(15)),
+                          elevation: 0,
+                          child: ListTile(
+                            leading: _statusIcon(status),
+                            title: Text(date,
+                                style: const TextStyle(
+                                    fontWeight: FontWeight.w600)),
+                            trailing: Text(status,
+                                style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    color: _statusColor(status))),
                           ),
-                          title: Text(date),
-                          trailing: Text(status,
-                              style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  color: status == 'Present'
-                                      ? Colors.green
-                                      : (status == 'Late'
-                                          ? Colors.orange
-                                          : Colors.red))),
-                        );
-                      },
-                    ),
-            ),
-          ],
-        ),
+                        ),
+                      );
+                    },
+                    childCount: attendance.length,
+                  ),
+                ),
+        ],
       ),
     );
+  }
+
+  Widget _miniStat(String label, String value) {
+    return Column(
+      children: [
+        Text(value,
+            style: const TextStyle(
+                color: Colors.white,
+                fontSize: 18,
+                fontWeight: FontWeight.bold)),
+        Text(label,
+            style: const TextStyle(color: Colors.white60, fontSize: 11)),
+      ],
+    );
+  }
+
+  Widget _statusIcon(String status) {
+    IconData icon;
+    Color color;
+    if (status == 'Present') {
+      icon = Icons.check_circle;
+      color = Colors.green;
+    } else if (status == 'Late') {
+      icon = Icons.access_time_filled;
+      color = Colors.orange;
+    } else {
+      icon = Icons.cancel;
+      color = Colors.red;
+    }
+    return CircleAvatar(
+        backgroundColor: color.withOpacity(0.1),
+        child: Icon(icon, color: color, size: 20));
+  }
+
+  Color _statusColor(String status) {
+    if (status == 'Present') return Colors.green;
+    if (status == 'Late') return Colors.orange;
+    return Colors.red;
   }
 }
 
@@ -144,31 +215,60 @@ class StudentProfileTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final authProvider = Provider.of<AuthProvider>(context);
+    final userData = authProvider.userData;
     return Scaffold(
       appBar: AppBar(title: const Text('My Profile')),
-      body: Center(
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(25),
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const CircleAvatar(radius: 50, child: Icon(Icons.person, size: 50)),
+            const CircleAvatar(
+                radius: 50,
+                backgroundColor: Color(0xFF1A56BE),
+                child: Icon(Icons.school, size: 50, color: Colors.white)),
             const SizedBox(height: 20),
-            Text(authProvider.userData?['name'] ?? 'N/A',
+            Text(userData?['name'] ?? 'Student',
                 style:
-                    const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-            Text(authProvider.userData?['email'] ?? 'N/A',
+                    const TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
+            Text(userData?['email'] ?? 'N/A',
                 style: const TextStyle(color: Colors.grey)),
-            Text('Class: ${authProvider.userData?['className'] ?? 'N/A'}',
-                style: const TextStyle(fontSize: 16)),
             const SizedBox(height: 40),
-            ElevatedButton.icon(
-              style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.red, foregroundColor: Colors.white),
-              onPressed: () => authProvider.logout(),
-              icon: const Icon(Icons.logout),
-              label: const Text('LOGOUT'),
+            _infoCard(
+                "Class/Section", userData?['className'] ?? 'N/A', Icons.class_),
+            _infoCard(
+                "Student ID", userData?['rollNumber'] ?? 'N/A', Icons.badge),
+            const SizedBox(height: 50),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.red[50],
+                    foregroundColor: Colors.red,
+                    elevation: 0),
+                onPressed: () => authProvider.logout(),
+                icon: const Icon(Icons.logout),
+                label: const Text('SIGN OUT'),
+              ),
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _infoCard(String label, String value, IconData icon) {
+    return Card(
+      margin: const EdgeInsets.only(bottom: 15),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+      child: ListTile(
+        leading: Icon(icon, color: const Color(0xFF1A56BE)),
+        title: Text(label,
+            style: const TextStyle(fontSize: 12, color: Colors.grey)),
+        subtitle: Text(value,
+            style: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: Color(0xFF1E293B))),
       ),
     );
   }
