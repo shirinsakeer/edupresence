@@ -28,17 +28,20 @@ class _MarkAttendanceState extends State<MarkAttendance> {
             child: Row(
               children: [
                 Expanded(
-                  child: DropdownButtonFormField<String>(
-                    value: selectedClass,
-                    hint: const Text('Select Class'),
-                    items: [
-                      'Class A',
-                      'Class B',
-                      'Class C'
-                    ] // In real app, fetch from classes collection
-                        .map((e) => DropdownMenuItem(value: e, child: Text(e)))
-                        .toList(),
-                    onChanged: (v) => setState(() => selectedClass = v),
+                  child: StreamBuilder<List<String>>(
+                    stream: studentProvider.getAllClasses(),
+                    builder: (context, snapshot) {
+                      final classes = snapshot.data ?? [];
+                      return DropdownButtonFormField<String>(
+                        value: selectedClass,
+                        hint: const Text('Select Class'),
+                        items: classes
+                            .map((e) =>
+                                DropdownMenuItem(value: e, child: Text(e)))
+                            .toList(),
+                        onChanged: (v) => setState(() => selectedClass = v),
+                      );
+                    },
                   ),
                 ),
                 const SizedBox(width: 10),

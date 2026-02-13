@@ -119,6 +119,22 @@ class StudentProvider with ChangeNotifier {
         .snapshots();
   }
 
+  Stream<QuerySnapshot> getAllStudents() {
+    return _firestore.collection('students').snapshots();
+  }
+
+  Stream<List<String>> getAllClasses() {
+    return _firestore.collection('students').snapshots().map((snapshot) {
+      final classes = snapshot.docs
+          .map((doc) => doc.data()['className'])
+          .whereType<String>()
+          .toSet()
+          .toList();
+      classes.sort();
+      return classes;
+    });
+  }
+
   Future<void> markAttendance({
     required String studentId,
     required String date,

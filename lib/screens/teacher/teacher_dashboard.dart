@@ -1,7 +1,10 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:edupresence/providers/auth_provider.dart';
+import 'package:edupresence/providers/student_provider.dart';
 import 'package:edupresence/screens/teacher/add_student.dart';
 import 'package:edupresence/screens/teacher/mark_attendance.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
 class TeacherDashboard extends StatefulWidget {
@@ -52,6 +55,8 @@ class TeacherHomeTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final authProvider = Provider.of<AuthProvider>(context);
+    final studentProvider = Provider.of<StudentProvider>(context);
+
     return Scaffold(
       appBar: AppBar(title: const Text('Dashboard')),
       body: Padding(
@@ -64,11 +69,35 @@ class TeacherHomeTab extends StatelessWidget {
               style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 20),
-            Row(
-              children: [
-                _statCard('Total Students', '45', Colors.blue),
-                _statCard('Attendance Today', '92%', Colors.green),
-              ],
+            StreamBuilder<QuerySnapshot>(
+              stream: studentProvider.getAllStudents(),
+              builder: (context, snapshot) {
+                final totalStudents = snapshot.data?.docs.length ?? 0;
+
+                // Calculate attendance today
+                int presentToday = 0;
+                final todayKey =
+                    DateFormat('yyyy-MM-dd').format(DateTime.now());
+                if (snapshot.hasData) {
+                  for (var doc in snapshot.data!.docs) {
+                    final data = doc.data() as Map<String, dynamic>;
+                    if ((data['attendance']?[todayKey] ?? '') == 'Present') {
+                      presentToday++;
+                    }
+                  }
+                }
+                String attendanceRate = totalStudents == 0
+                    ? '0%'
+                    : '${((presentToday / totalStudents) * 100).toStringAsFixed(0)}%';
+
+                return Row(
+                  children: [
+                    _statCard('Total Students', totalStudents.toString(),
+                        Colors.blue),
+                    _statCard('Attendance Today', attendanceRate, Colors.green),
+                  ],
+                );
+              },
             ),
           ],
         ),
@@ -104,6 +133,8 @@ class TeacherStudentsTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final studentProvider = Provider.of<StudentProvider>(context);
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Manage Students'),
@@ -115,7 +146,34 @@ class TeacherStudentsTab extends StatelessWidget {
           ),
         ],
       ),
-      body: const Center(child: Text('Student list will appear here')),
+      body: StreamBuilder<QuerySnapshot>(
+        stream: studentProvider.getAllStudents(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          }
+          if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+            return const Center(
+                child: Text('No students found. Add one above!'));
+          }
+
+          final students = snapshot.data!.docs;
+          return ListView.builder(
+            itemCount: students.length,
+            itemBuilder: (context, index) {
+              final student = students[index].data() as Map<String, dynamic>;
+              return ListTile(
+                leading: const CircleAvatar(child: Icon(Icons.person)),
+                title: Text(student['name']),
+                subtitle: Text(
+                    'ID: ${student['rollNumber']} | ${student['className']}'),
+                trailing: Text(student['email'],
+                    style: const TextStyle(fontSize: 12, color: Colors.grey)),
+              );
+            },
+          );
+        },
+      ),
     );
   }
 }
