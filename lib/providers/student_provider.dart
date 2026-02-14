@@ -144,4 +144,17 @@ class StudentProvider with ChangeNotifier {
       'attendance.$date': status,
     });
   }
+
+  // Set total days for a class
+  Future<void> setTotalDays(String className, int totalDays) async {
+    await _firestore.collection('classes').doc(className).set({
+      'totalDays': totalDays,
+    }, SetOptions(merge: true));
+    notifyListeners();
+  }
+
+  // Get total days for a class
+  Stream<DocumentSnapshot> getClassMetadata(String className) {
+    return _firestore.collection('classes').doc(className).snapshots();
+  }
 }

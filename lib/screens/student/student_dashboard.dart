@@ -1,6 +1,11 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:edupresence/providers/auth_provider.dart';
+import 'package:edupresence/providers/student_provider.dart';
 import 'package:edupresence/screens/student/chatbot.dart';
+import 'package:edupresence/services/cloudinary_service.dart';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
+import 'dart:io';
 import 'package:provider/provider.dart';
 
 class StudentDashboard extends StatefulWidget {
@@ -26,27 +31,44 @@ class _StudentDashboardState extends State<StudentDashboard> {
         index: _selectedIndex,
         children: _pages,
       ),
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _selectedIndex,
-        onTap: (index) => setState(() => _selectedIndex = index),
-        type: BottomNavigationBarType.fixed,
-        selectedItemColor: const Color(0xFF1A56BE),
-        unselectedItemColor: Colors.grey,
-        backgroundColor: Colors.white,
-        items: const [
-          BottomNavigationBarItem(
-              icon: Icon(Icons.home_outlined),
-              activeIcon: Icon(Icons.home),
-              label: 'Home'),
-          BottomNavigationBarItem(
-              icon: Icon(Icons.smart_toy_outlined),
-              activeIcon: Icon(Icons.smart_toy),
-              label: 'AI Chat'),
-          BottomNavigationBarItem(
-              icon: Icon(Icons.person_outline),
-              activeIcon: Icon(Icons.person),
-              label: 'Profile'),
-        ],
+      bottomNavigationBar: Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.04),
+              blurRadius: 20,
+              offset: const Offset(0, -5),
+            )
+          ],
+        ),
+        child: BottomNavigationBar(
+          currentIndex: _selectedIndex,
+          onTap: (index) => setState(() => _selectedIndex = index),
+          type: BottomNavigationBarType.fixed,
+          selectedItemColor: const Color(0xFF1A56BE),
+          unselectedItemColor: const Color(0xFF94A3B8),
+          backgroundColor: Colors.white,
+          elevation: 0,
+          selectedLabelStyle:
+              const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+          unselectedLabelStyle:
+              const TextStyle(fontWeight: FontWeight.w500, fontSize: 12),
+          items: const [
+            BottomNavigationBarItem(
+                icon: Icon(Icons.home_outlined),
+                activeIcon: Icon(Icons.home_filled),
+                label: 'Summary'),
+            BottomNavigationBarItem(
+                icon: Icon(Icons.auto_awesome_outlined),
+                activeIcon: Icon(Icons.auto_awesome),
+                label: 'EduAI'),
+            BottomNavigationBarItem(
+                icon: Icon(Icons.person_pin_outlined),
+                activeIcon: Icon(Icons.person_pin_rounded),
+                label: 'Identity'),
+          ],
+        ),
       ),
     );
   }
@@ -58,115 +80,206 @@ class StudentHomeTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final authProvider = Provider.of<AuthProvider>(context);
+    final studentProvider =
+        Provider.of<StudentProvider>(context, listen: false);
     final userData = authProvider.userData;
+    final String className = userData?['className'] ?? '';
     final attendance = userData?['attendance'] as Map<String, dynamic>? ?? {};
 
-    int totalDays = attendance.length;
     int presentDays = attendance.values.where((v) => v == 'Present').length;
-    double percentage = totalDays == 0 ? 0 : (presentDays / totalDays) * 100;
 
-    return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
-      appBar: AppBar(
-        title: Image.asset("assets/logo.png",
-            height: 40, errorBuilder: (c, e, s) => const Text("EduPresence")),
-      ),
-      body: CustomScrollView(
-        slivers: [
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.all(20),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text('Welcome, ${userData?['name'] ?? 'Student'}',
-                      style: const TextStyle(
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold,
-                          color: Color(0xFF1E293B))),
-                  const Text('Here is your academic summary',
-                      style: TextStyle(color: Colors.grey)),
-                  const SizedBox(height: 25),
-                  Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.all(25),
-                    decoration: BoxDecoration(
-                      gradient: const LinearGradient(
-                          colors: [Color(0xFF1A56BE), Color(0xFF3B82F6)]),
-                      borderRadius: BorderRadius.circular(20),
-                      boxShadow: [
-                        BoxShadow(
-                            color: const Color(0xFF1A56BE).withOpacity(0.3),
-                            blurRadius: 15,
-                            offset: const Offset(0, 8))
-                      ],
-                    ),
-                    child: Column(
-                      children: [
-                        const Text('Attendance Score',
-                            style:
-                                TextStyle(color: Colors.white70, fontSize: 16)),
-                        const SizedBox(height: 10),
-                        Text('${percentage.toStringAsFixed(1)}%',
-                            style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 48,
-                                fontWeight: FontWeight.bold)),
-                        const SizedBox(height: 15),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            _miniStat('Present', '$presentDays'),
-                            const SizedBox(width: 20),
-                            _miniStat('Total Days', '$totalDays'),
+    return StreamBuilder<DocumentSnapshot>(
+      stream: studentProvider.getClassMetadata(className),
+      builder: (context, snapshot) {
+        int totalDays = attendance.length;
+        if (snapshot.hasData && snapshot.data!.exists) {
+          totalDays =
+              (snapshot.data!.data() as Map<String, dynamic>)['totalDays'] ??
+                  attendance.length;
+        }
+
+        double percentage =
+            totalDays == 0 ? 0 : (presentDays / totalDays) * 100;
+
+        return Scaffold(
+          backgroundColor: const Color(0xFFF8FAFC),
+          appBar: AppBar(
+            automaticallyImplyLeading: false,
+            title: Hero(
+              tag: 'logo',
+              child: Image.asset("assets/logo.png",
+                  height: 60,
+                  errorBuilder: (c, e, s) => const Text("EduPresence")),
+            ),
+            actions: [
+              IconButton(
+                  icon: const Icon(Icons.auto_awesome_rounded,
+                      color: Color(0xFF1A56BE)),
+                  onPressed: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => const ChatBotScreen()))),
+              const SizedBox(width: 8),
+            ],
+          ),
+          body: CustomScrollView(
+            physics: const BouncingScrollPhysics(),
+            slivers: [
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.all(24),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                          'Aloha, ${userData?['name']?.split(' ')[0] ?? 'Student'}!',
+                          style: const TextStyle(
+                              fontSize: 28,
+                              fontWeight: FontWeight.w900,
+                              color: Color(0xFF1E293B),
+                              letterSpacing: -0.5)),
+                      const Text('You are doing great this semester.',
+                          style: TextStyle(
+                              color: Color(0xFF64748B),
+                              fontWeight: FontWeight.w500)),
+                      const SizedBox(height: 32),
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(28),
+                        decoration: BoxDecoration(
+                          gradient: const LinearGradient(
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                              colors: [Color(0xFF1A56BE), Color(0xFF0369A1)]),
+                          borderRadius: BorderRadius.circular(24),
+                          boxShadow: [
+                            BoxShadow(
+                                color: const Color(0xFF1A56BE).withOpacity(0.2),
+                                blurRadius: 20,
+                                offset: const Offset(0, 10))
                           ],
                         ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 35),
-                  const Text("Recent Records",
-                      style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: Color(0xFF1E293B))),
-                ],
-              ),
-            ),
-          ),
-          attendance.isEmpty
-              ? const SliverFillRemaining(
-                  child: Center(child: Text('No attendance records found.')))
-              : SliverList(
-                  delegate: SliverChildBuilderDelegate(
-                    (context, index) {
-                      String date = attendance.keys.elementAt(index);
-                      String status = attendance.values.elementAt(index);
-                      return Padding(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 20, vertical: 5),
-                        child: Card(
-                          shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(15)),
-                          elevation: 0,
-                          child: ListTile(
-                            leading: _statusIcon(status),
-                            title: Text(date,
-                                style: const TextStyle(
-                                    fontWeight: FontWeight.w600)),
-                            trailing: Text(status,
+                        child: Column(
+                          children: [
+                            const Text('ATTENDANCE SCORE',
                                 style: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    color: _statusColor(status))),
-                          ),
+                                    color: Colors.white70,
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w800,
+                                    letterSpacing: 1.5)),
+                            const SizedBox(height: 12),
+                            Text('${percentage.toStringAsFixed(1)}%',
+                                style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 56,
+                                    fontWeight: FontWeight.w900)),
+                            const SizedBox(height: 24),
+                            Container(
+                              padding: const EdgeInsets.all(16),
+                              decoration: BoxDecoration(
+                                color: Colors.white.withOpacity(0.1),
+                                borderRadius: BorderRadius.circular(16),
+                              ),
+                              child: Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceAround,
+                                children: [
+                                  _miniStat('PRESENT', '$presentDays'),
+                                  Container(
+                                      width: 1,
+                                      height: 20,
+                                      color: Colors.white24),
+                                  _miniStat('ACADEMIC DAYS', '$totalDays'),
+                                ],
+                              ),
+                            ),
+                          ],
                         ),
-                      );
-                    },
-                    childCount: attendance.length,
+                      ),
+                      const SizedBox(height: 40),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          const Text("Activity Timeline",
+                              style: TextStyle(
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.w800,
+                                  color: Color(0xFF1E293B))),
+                          TextButton(
+                            onPressed: () {},
+                            child: const Text("View All",
+                                style: TextStyle(fontWeight: FontWeight.bold)),
+                          )
+                        ],
+                      ),
+                      const SizedBox(height: 12),
+                    ],
                   ),
                 ),
-        ],
-      ),
+              ),
+              attendance.isEmpty
+                  ? SliverFillRemaining(
+                      child: Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(Icons.history_rounded,
+                                size: 48, color: Colors.grey[300]),
+                            const SizedBox(height: 12),
+                            const Text('No sessions logged yet.',
+                                style: TextStyle(color: Color(0xFF94A3B8))),
+                          ],
+                        ),
+                      ),
+                    )
+                  : SliverPadding(
+                      padding: const EdgeInsets.fromLTRB(24, 0, 24, 40),
+                      sliver: SliverList(
+                        delegate: SliverChildBuilderDelegate(
+                          (context, index) {
+                            final sortedKeys = attendance.keys.toList()
+                              ..sort((a, b) => b.compareTo(a));
+                            String date = sortedKeys[index];
+                            String status = attendance[date];
+                            return Container(
+                              margin: const EdgeInsets.only(bottom: 12),
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(18),
+                                border:
+                                    Border.all(color: const Color(0xFFE2E8F0)),
+                              ),
+                              child: ListTile(
+                                leading: _statusIcon(status),
+                                title: Text(date,
+                                    style: const TextStyle(
+                                        fontWeight: FontWeight.w700,
+                                        color: Color(0xFF1E293B))),
+                                trailing: Container(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 12, vertical: 6),
+                                  decoration: BoxDecoration(
+                                    color:
+                                        _statusColor(status).withOpacity(0.1),
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: Text(status,
+                                      style: TextStyle(
+                                          fontWeight: FontWeight.w800,
+                                          fontSize: 11,
+                                          color: _statusColor(status))),
+                                ),
+                              ),
+                            );
+                          },
+                          childCount: attendance.length,
+                        ),
+                      ),
+                    ),
+            ],
+          ),
+        );
+      },
     );
   }
 
@@ -176,10 +289,13 @@ class StudentHomeTab extends StatelessWidget {
         Text(value,
             style: const TextStyle(
                 color: Colors.white,
-                fontSize: 18,
-                fontWeight: FontWeight.bold)),
+                fontSize: 22,
+                fontWeight: FontWeight.w900)),
         Text(label,
-            style: const TextStyle(color: Colors.white60, fontSize: 11)),
+            style: const TextStyle(
+                color: Colors.white60,
+                fontSize: 10,
+                fontWeight: FontWeight.bold)),
       ],
     );
   }
@@ -188,66 +304,211 @@ class StudentHomeTab extends StatelessWidget {
     IconData icon;
     Color color;
     if (status == 'Present') {
-      icon = Icons.check_circle;
-      color = Colors.green;
+      icon = Icons.check_rounded;
+      color = const Color(0xFF10B981);
     } else if (status == 'Late') {
-      icon = Icons.access_time_filled;
-      color = Colors.orange;
+      icon = Icons.timer_outlined;
+      color = const Color(0xFFF59E0B);
     } else {
-      icon = Icons.cancel;
-      color = Colors.red;
+      icon = Icons.close_rounded;
+      color = const Color(0xFFEF4444);
     }
-    return CircleAvatar(
-        backgroundColor: color.withOpacity(0.1),
+    return Container(
+        width: 40,
+        height: 40,
+        decoration: BoxDecoration(
+          color: color.withOpacity(0.1),
+          shape: BoxShape.circle,
+        ),
         child: Icon(icon, color: color, size: 20));
   }
 
   Color _statusColor(String status) {
-    if (status == 'Present') return Colors.green;
-    if (status == 'Late') return Colors.orange;
-    return Colors.red;
+    if (status == 'Present') return const Color(0xFF10B981);
+    if (status == 'Late') return const Color(0xFFF59E0B);
+    return const Color(0xFFEF4444);
   }
 }
 
-class StudentProfileTab extends StatelessWidget {
+class StudentProfileTab extends StatefulWidget {
   const StudentProfileTab({super.key});
+
+  @override
+  State<StudentProfileTab> createState() => _StudentProfileTabState();
+}
+
+class _StudentProfileTabState extends State<StudentProfileTab> {
+  bool _isUploading = false;
+
+  Future<void> _pickAndUploadImage() async {
+    final picker = ImagePicker();
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+
+    try {
+      final XFile? image = await picker.pickImage(
+        source: ImageSource.gallery,
+        imageQuality: 70,
+      );
+
+      if (image != null) {
+        setState(() => _isUploading = true);
+
+        final String? imageUrl =
+            await CloudinaryService.uploadImage(File(image.path));
+
+        if (imageUrl != null) {
+          final error = await authProvider.updateProfileImage(imageUrl);
+          if (error != null && mounted) {
+            _showSnackBar(error, Colors.redAccent);
+          } else if (mounted) {
+            _showSnackBar("Profile updated successfully!", Colors.green);
+          }
+        } else if (mounted) {
+          _showSnackBar(
+              "Failed to upload image. Please check your Cloudinary credentials.",
+              Colors.redAccent);
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        _showSnackBar("Error: $e", Colors.redAccent);
+      }
+    } finally {
+      if (mounted) setState(() => _isUploading = false);
+    }
+  }
+
+  void _showSnackBar(String message, Color color) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: color,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
     final authProvider = Provider.of<AuthProvider>(context);
     final userData = authProvider.userData;
+    final String? profileImageUrl = userData?['profileImage'];
+
     return Scaffold(
-      appBar: AppBar(title: const Text('My Profile')),
+      backgroundColor: const Color(0xFFF8FAFC),
+      appBar: AppBar(
+        title: const Text('Digital ID'),
+        elevation: 0,
+        backgroundColor: Colors.white,
+        foregroundColor: const Color(0xFF1E293B),
+      ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(25),
+        padding: const EdgeInsets.all(24),
         child: Column(
           children: [
-            const CircleAvatar(
-                radius: 50,
-                backgroundColor: Color(0xFF1A56BE),
-                child: Icon(Icons.school, size: 50, color: Colors.white)),
-            const SizedBox(height: 20),
-            Text(userData?['name'] ?? 'Student',
-                style:
-                    const TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
-            Text(userData?['email'] ?? 'N/A',
-                style: const TextStyle(color: Colors.grey)),
+            Container(
+              padding: const EdgeInsets.all(24),
+              decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(24),
+                  border: Border.all(color: const Color(0xFFE2E8F0)),
+                  boxShadow: [
+                    BoxShadow(
+                        color: Colors.black.withOpacity(0.02),
+                        blurRadius: 10,
+                        offset: const Offset(0, 4))
+                  ]),
+              child: Column(
+                children: [
+                  Stack(
+                    alignment: Alignment.bottomRight,
+                    children: [
+                      Container(
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                              color: const Color(0xFF1A56BE), width: 2),
+                        ),
+                        child: CircleAvatar(
+                          radius: 55,
+                          backgroundColor: Colors.grey[100],
+                          backgroundImage: profileImageUrl != null
+                              ? NetworkImage(profileImageUrl)
+                              : null,
+                          child: profileImageUrl == null
+                              ? const Icon(Icons.person_rounded,
+                                  size: 60, color: Color(0xFF94A3B8))
+                              : null,
+                        ),
+                      ),
+                      if (_isUploading)
+                        const Positioned.fill(
+                          child: CircularProgressIndicator(
+                            color: Color(0xFF1A56BE),
+                            strokeWidth: 3,
+                          ),
+                        ),
+                      GestureDetector(
+                        onTap:
+                            _isUploading ? null : () => _pickAndUploadImage(),
+                        child: Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: const BoxDecoration(
+                            color: Color(0xFF1A56BE),
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(Icons.camera_alt_rounded,
+                              size: 18, color: Colors.white),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 20),
+                  Text(userData?['name'] ?? 'Scholar',
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.w900,
+                          color: Color(0xFF1E293B))),
+                  Text(userData?['email'] ?? 'N/A',
+                      style: const TextStyle(
+                          color: Color(0xFF64748B),
+                          fontWeight: FontWeight.w500)),
+                  const SizedBox(height: 24),
+                  const Divider(height: 1),
+                  const SizedBox(height: 24),
+                  Row(
+                    children: [
+                      _idBadge("CLASS", userData?['className'] ?? 'N/A',
+                          Icons.school_rounded),
+                      const SizedBox(width: 16),
+                      _idBadge("ROLL #", userData?['rollNumber'] ?? 'N/A',
+                          Icons.badge_rounded),
+                    ],
+                  ),
+                ],
+              ),
+            ),
             const SizedBox(height: 40),
-            _infoCard(
-                "Class/Section", userData?['className'] ?? 'N/A', Icons.class_),
-            _infoCard(
-                "Student ID", userData?['rollNumber'] ?? 'N/A', Icons.badge),
-            const SizedBox(height: 50),
+            _actionButton(Icons.edit_note_rounded, "Request Data Correction"),
+            _actionButton(Icons.download_rounded, "Download Attendance Report"),
+            const SizedBox(height: 40),
             SizedBox(
               width: double.infinity,
               child: ElevatedButton.icon(
                 style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.red[50],
-                    foregroundColor: Colors.red,
-                    elevation: 0),
+                    backgroundColor: Colors.white,
+                    foregroundColor: const Color(0xFFEF4444),
+                    elevation: 0,
+                    side: const BorderSide(color: Color(0xFFFEE2E2)),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16)),
+                    padding: const EdgeInsets.all(16)),
                 onPressed: () => authProvider.logout(),
-                icon: const Icon(Icons.logout),
-                label: const Text('SIGN OUT'),
+                icon: const Icon(Icons.power_settings_new_rounded),
+                label: const Text('LOGOUT SESSION',
+                    style: TextStyle(fontWeight: FontWeight.w700)),
               ),
             ),
           ],
@@ -256,19 +517,49 @@ class StudentProfileTab extends StatelessWidget {
     );
   }
 
-  Widget _infoCard(String label, String value, IconData icon) {
-    return Card(
-      margin: const EdgeInsets.only(bottom: 15),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-      child: ListTile(
-        leading: Icon(icon, color: const Color(0xFF1A56BE)),
-        title: Text(label,
-            style: const TextStyle(fontSize: 12, color: Colors.grey)),
-        subtitle: Text(value,
-            style: const TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-                color: Color(0xFF1E293B))),
+  Widget _idBadge(String label, String value, IconData icon) {
+    return Expanded(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(icon, size: 12, color: const Color(0xFF1A56BE)),
+              const SizedBox(width: 4),
+              Text(label,
+                  style: const TextStyle(
+                      fontSize: 10,
+                      color: Color(0xFF94A3B8),
+                      fontWeight: FontWeight.w800)),
+            ],
+          ),
+          const SizedBox(height: 4),
+          Text(value,
+              style: const TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w800,
+                  color: Color(0xFF1E293B))),
+        ],
+      ),
+    );
+  }
+
+  Widget _actionButton(IconData icon, String label) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      width: double.infinity,
+      child: OutlinedButton.icon(
+        style: OutlinedButton.styleFrom(
+          padding: const EdgeInsets.all(18),
+          side: const BorderSide(color: Color(0xFFE2E8F0)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          alignment: Alignment.centerLeft,
+          foregroundColor: const Color(0xFF475569),
+        ),
+        onPressed: () {},
+        icon: Icon(icon, size: 20),
+        label: Text(label, style: const TextStyle(fontWeight: FontWeight.w600)),
       ),
     );
   }

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_generative_ai/google_generative_ai.dart';
 
 class ChatProvider with ChangeNotifier {
-  final String _apiKey = "YOUR_GEMINI_API_KEY";
+  final String _apiKey = "AIzaSyCdG3cI6gUvCWmVIehyI0WFpmjgV6so_h8";
   late GenerativeModel _model;
   late ChatSession _chat;
 
@@ -13,7 +13,12 @@ class ChatProvider with ChangeNotifier {
   bool get isTyping => _isTyping;
 
   ChatProvider() {
-    _model = GenerativeModel(model: 'gemini-1.5-flash', apiKey: _apiKey);
+    _model = GenerativeModel(
+      model: 'gemini-1.5-flash',
+      apiKey: _apiKey,
+      systemInstruction: Content.system(
+          "You are the EduPresence Assistant. You help teachers manage attendance and analyze data, and help students with their academic progress. Be concise, professional, and encouraging."),
+    );
     _chat = _model.startChat();
   }
 

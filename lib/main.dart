@@ -35,46 +35,61 @@ class MyApp extends StatelessWidget {
       title: 'EduPresence',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
+        useMaterial3: true,
+        scaffoldBackgroundColor: const Color(0xFFF8FAFC),
         colorScheme: ColorScheme.fromSeed(
           seedColor: const Color(0xFF1A56BE),
           primary: const Color(0xFF1A56BE),
           secondary: const Color(0xFF2C3E50),
+          surface: Colors.white,
         ),
-        useMaterial3: true,
         appBarTheme: const AppBarTheme(
-          centerTitle: true,
+          centerTitle: false,
           backgroundColor: Colors.white,
+          surfaceTintColor: Colors.transparent,
           elevation: 0,
           titleTextStyle: TextStyle(
-              color: Color(0xFF1A56BE),
+              color: Color(0xFF1E293B),
               fontSize: 20,
-              fontWeight: FontWeight.bold),
-          iconTheme: IconThemeData(color: Color(0xFF1A56BE)),
+              fontWeight: FontWeight.w800),
+          iconTheme: IconThemeData(color: Color(0xFF1E293B)),
+        ),
+        cardTheme: CardThemeData(
+          elevation: 0,
+          shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20),
+              side: const BorderSide(color: Color(0xFFE2E8F0))),
+          color: Colors.white,
         ),
         elevatedButtonTheme: ElevatedButtonThemeData(
           style: ElevatedButton.styleFrom(
             backgroundColor: const Color(0xFF1A56BE),
             foregroundColor: Colors.white,
+            elevation: 0,
             shape:
-                RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-            padding: const EdgeInsets.symmetric(vertical: 16),
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
+            textStyle:
+                const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
           ),
         ),
         inputDecorationTheme: InputDecorationTheme(
           filled: true,
-          fillColor: Colors.grey[50],
+          fillColor: const Color(0xFFF8FAFC),
           border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: BorderSide(color: Colors.grey[300]!),
+            borderRadius: BorderRadius.circular(16),
+            borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
           ),
           enabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: BorderSide(color: Colors.grey[200]!),
+            borderRadius: BorderRadius.circular(16),
+            borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
           ),
           focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: const BorderSide(color: Color(0xFF1A56BE), width: 1.5),
+            borderRadius: BorderRadius.circular(16),
+            borderSide: const BorderSide(color: Color(0xFF1A56BE), width: 2),
           ),
+          contentPadding:
+              const EdgeInsets.symmetric(vertical: 18, horizontal: 20),
         ),
       ),
       home: const AuthWrapper(),
@@ -90,7 +105,7 @@ class AuthWrapper extends StatelessWidget {
     final authProvider = Provider.of<AuthProvider>(context);
 
     if (authProvider.user == null) {
-      return Login();
+      return const Login();
     }
 
     if (authProvider.role == UserRole.teacher) {
@@ -99,7 +114,18 @@ class AuthWrapper extends StatelessWidget {
       return const StudentDashboard();
     } else {
       return const Scaffold(
-        body: Center(child: CircularProgressIndicator()),
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              CircularProgressIndicator(color: Color(0xFF1A56BE)),
+              SizedBox(height: 16),
+              Text("Syncing your dashboard...",
+                  style: TextStyle(
+                      color: Color(0xFF64748B), fontWeight: FontWeight.w500))
+            ],
+          ),
+        ),
       );
     }
   }

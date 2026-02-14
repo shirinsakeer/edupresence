@@ -20,43 +20,110 @@ class _MarkAttendanceState extends State<MarkAttendance> {
     final studentProvider = Provider.of<StudentProvider>(context);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Mark Attendance')),
+      backgroundColor: const Color(0xFFF8FAFC),
+      appBar: AppBar(
+        title: const Text('Mark Attendance'),
+        elevation: 0,
+        backgroundColor: Colors.white,
+        foregroundColor: const Color(0xFF1E293B),
+      ),
       body: Column(
         children: [
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Row(
+          Container(
+            padding: const EdgeInsets.all(20),
+            decoration: const BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.only(
+                bottomLeft: Radius.circular(30),
+                bottomRight: Radius.circular(30),
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black12,
+                  blurRadius: 10,
+                  offset: Offset(0, 4),
+                )
+              ],
+            ),
+            child: Column(
               children: [
-                Expanded(
-                  child: StreamBuilder<List<String>>(
-                    stream: studentProvider.getAllClasses(),
-                    builder: (context, snapshot) {
-                      final classes = snapshot.data ?? [];
-                      return DropdownButtonFormField<String>(
-                        value: selectedClass,
-                        hint: const Text('Select Class'),
-                        items: classes
-                            .map((e) =>
-                                DropdownMenuItem(value: e, child: Text(e)))
-                            .toList(),
-                        onChanged: (v) => setState(() => selectedClass = v),
-                      );
-                    },
-                  ),
+                Row(
+                  children: [
+                    Expanded(
+                      child: StreamBuilder<List<String>>(
+                        stream: studentProvider.getAllClasses(),
+                        builder: (context, snapshot) {
+                          final classes = snapshot.data ?? [];
+                          return DropdownButtonFormField<String>(
+                            value: selectedClass,
+                            decoration: InputDecoration(
+                              hintText: 'Choose Class',
+                              prefixIcon: const Icon(Icons.school_rounded,
+                                  color: Color(0xFF1A56BE)),
+                              filled: true,
+                              fillColor: const Color(0xFFF1F5F9),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(16),
+                                borderSide: BorderSide.none,
+                              ),
+                            ),
+                            items: classes
+                                .map((e) =>
+                                    DropdownMenuItem(value: e, child: Text(e)))
+                                .toList(),
+                            onChanged: (v) => setState(() => selectedClass = v),
+                          );
+                        },
+                      ),
+                    ),
+                  ],
                 ),
-                const SizedBox(width: 10),
-                TextButton.icon(
-                  onPressed: () async {
+                const SizedBox(height: 16),
+                InkWell(
+                  onTap: () async {
                     final date = await showDatePicker(
                       context: context,
                       initialDate: selectedDate,
                       firstDate: DateTime(2000),
                       lastDate: DateTime.now(),
+                      builder: (context, child) {
+                        return Theme(
+                          data: Theme.of(context).copyWith(
+                            colorScheme: const ColorScheme.light(
+                              primary: Color(0xFF1A56BE),
+                            ),
+                          ),
+                          child: child!,
+                        );
+                      },
                     );
                     if (date != null) setState(() => selectedDate = date);
                   },
-                  icon: const Icon(Icons.calendar_today),
-                  label: Text(DateFormat('dd-MM-yyyy').format(selectedDate)),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 16, vertical: 12),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF1A56BE).withOpacity(0.05),
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(
+                          color: const Color(0xFF1A56BE).withOpacity(0.1)),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Icon(Icons.calendar_today_rounded,
+                            size: 18, color: Color(0xFF1A56BE)),
+                        const SizedBox(width: 10),
+                        Text(
+                          DateFormat('EEEE, dd MMM yyyy').format(selectedDate),
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xFF1A56BE),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
               ],
             ),
@@ -67,15 +134,28 @@ class _MarkAttendanceState extends State<MarkAttendance> {
                 stream: studentProvider.getStudentsByClass(selectedClass!),
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.waiting) {
-                    return const Center(child: CircularProgressIndicator());
+                    return const Center(
+                        child: CircularProgressIndicator(
+                            color: Color(0xFF1A56BE)));
                   }
                   if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-                    return const Center(
-                        child: Text('No students found in this class'));
+                    return Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.group_off_rounded,
+                              size: 64, color: Colors.grey[300]),
+                          const SizedBox(height: 16),
+                          const Text('No students found in this class',
+                              style: TextStyle(color: Color(0xFF64748B))),
+                        ],
+                      ),
+                    );
                   }
 
                   final students = snapshot.data!.docs;
                   return ListView.builder(
+                    padding: const EdgeInsets.all(20),
                     itemCount: students.length,
                     itemBuilder: (context, index) {
                       final student = students[index];
@@ -86,24 +166,77 @@ class _MarkAttendanceState extends State<MarkAttendance> {
                       final currentStatus =
                           (studentData['attendance'] ?? {})[dateKey] ?? 'None';
 
-                      return ListTile(
-                        title: Text(studentData['name']),
-                        subtitle: Text('Status: $currentStatus'),
-                        trailing: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            _statusButton(student.id, 'Present', Colors.green,
-                                currentStatus),
-                            _statusButton(student.id, 'Late', Colors.orange,
-                                currentStatus),
-                            _statusButton(student.id, 'Absent', Colors.red,
-                                currentStatus),
-                          ],
+                      return Container(
+                        margin: const EdgeInsets.only(bottom: 12),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(color: const Color(0xFFE2E8F0)),
+                        ),
+                        child: ListTile(
+                          contentPadding: const EdgeInsets.all(12),
+                          leading: CircleAvatar(
+                            radius: 24,
+                            backgroundColor:
+                                const Color(0xFF1A56BE).withOpacity(0.1),
+                            backgroundImage: studentData['profileImage'] != null
+                                ? NetworkImage(studentData['profileImage'])
+                                : null,
+                            child: studentData['profileImage'] == null
+                                ? Text(studentData['name']?[0] ?? 'S',
+                                    style: const TextStyle(
+                                        color: Color(0xFF1A56BE),
+                                        fontWeight: FontWeight.bold))
+                                : null,
+                          ),
+                          title: Text(studentData['name'],
+                              style: const TextStyle(
+                                  fontWeight: FontWeight.w800,
+                                  color: Color(0xFF1E293B))),
+                          subtitle: Padding(
+                            padding: const EdgeInsets.only(top: 4),
+                            child: Text(
+                              'Current: $currentStatus',
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 12,
+                                color: _getStatusColor(currentStatus),
+                              ),
+                            ),
+                          ),
+                          trailing: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              _statusAction(student.id, 'Present',
+                                  const Color(0xFF10B981), currentStatus),
+                              const SizedBox(width: 8),
+                              _statusAction(student.id, 'Late',
+                                  const Color(0xFFF59E0B), currentStatus),
+                              const SizedBox(width: 8),
+                              _statusAction(student.id, 'Absent',
+                                  const Color(0xFFEF4444), currentStatus),
+                            ],
+                          ),
                         ),
                       );
                     },
                   );
                 },
+              ),
+            )
+          else
+            Expanded(
+              child: Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.arrow_upward_rounded,
+                        size: 48, color: Colors.grey[300]),
+                    const SizedBox(height: 16),
+                    const Text('Select a class to start marking',
+                        style: TextStyle(color: Color(0xFF64748B))),
+                  ],
+                ),
               ),
             ),
         ],
@@ -111,17 +244,24 @@ class _MarkAttendanceState extends State<MarkAttendance> {
     );
   }
 
-  Widget _statusButton(
+  Color _getStatusColor(String status) {
+    switch (status) {
+      case 'Present':
+        return const Color(0xFF10B981);
+      case 'Late':
+        return const Color(0xFFF59E0B);
+      case 'Absent':
+        return const Color(0xFFEF4444);
+      default:
+        return Color(0xFF94A3B8);
+    }
+  }
+
+  Widget _statusAction(
       String studentId, String status, Color color, String currentStatus) {
     bool isSelected = currentStatus == status;
-    return IconButton(
-      icon: Icon(
-        status == 'Present'
-            ? Icons.check_circle
-            : (status == 'Late' ? Icons.access_time_filled : Icons.cancel),
-        color: isSelected ? color : Colors.grey,
-      ),
-      onPressed: () {
+    return GestureDetector(
+      onTap: () {
         final dateKey = DateFormat('yyyy-MM-dd').format(selectedDate);
         Provider.of<StudentProvider>(context, listen: false).markAttendance(
           studentId: studentId,
@@ -129,6 +269,22 @@ class _MarkAttendanceState extends State<MarkAttendance> {
           status: status,
         );
       },
+      child: Container(
+        padding: const EdgeInsets.all(8),
+        decoration: BoxDecoration(
+          color: isSelected ? color : color.withOpacity(0.1),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Icon(
+          status == 'Present'
+              ? Icons.check_rounded
+              : (status == 'Late'
+                  ? Icons.access_time_rounded
+                  : Icons.close_rounded),
+          size: 20,
+          color: isSelected ? Colors.white : color,
+        ),
+      ),
     );
   }
 }

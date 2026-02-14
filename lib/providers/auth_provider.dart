@@ -1,3 +1,4 @@
+// Version: 1.0.1 - Fixed Stale Subscription Error
 import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -12,17 +13,16 @@ class AuthProvider with ChangeNotifier {
   User? _user;
   UserRole _role = UserRole.none;
   Map<String, dynamic>? _userData;
+  StreamSubscription? _roleSubscription;
 
   User? get user => _user;
   UserRole get role => _role;
   Map<String, dynamic>? get userData => _userData;
 
-  StreamSubscription? _userSubscription;
-
   AuthProvider() {
     _auth.authStateChanges().listen((User? user) {
       _user = user;
-      _userSubscription?.cancel();
+      _roleSubscription?.cancel();
       if (user != null) {
         _listenToUserData();
       } else {
@@ -34,9 +34,12 @@ class AuthProvider with ChangeNotifier {
   }
 
   void _listenToUserData() {
-    // We don't know if it's a teacher or student first, so we try teacher collection
-    // In a real optimized app, you might have a 'users' collection with a role field
-    _userSubscription = _firestore
+    if (_user == null) return;
+
+    _roleSubscription?.cancel();
+
+    // Check teacher collection
+    _roleSubscription = _firestore
         .collection('teachers')
         .doc(_user!.uid)
         .snapshots()
@@ -46,19 +49,36 @@ class AuthProvider with ChangeNotifier {
         _userData = teacherDoc.data();
         notifyListeners();
       } else {
-        // Not a teacher, try student
-        _firestore
-            .collection('students')
-            .doc(_user!.uid)
-            .snapshots()
-            .listen((studentDoc) {
-          if (studentDoc.exists) {
-            _role = UserRole.student;
-            _userData = studentDoc.data();
-            notifyListeners();
-          }
-        });
+        // Not a teacher, check student
+        _checkStudentData();
       }
+    }, onError: (e) {
+      print("AuthProvider Error: $e");
+    });
+  }
+
+  void _checkStudentData() {
+    if (_user == null) return;
+
+    // We don't necessarily need to replace _roleSubscription here if we want to listen to both,
+    // but the logic expects one active role listener.
+    _roleSubscription?.cancel();
+    _roleSubscription = _firestore
+        .collection('students')
+        .doc(_user!.uid)
+        .snapshots()
+        .listen((studentDoc) {
+      if (studentDoc.exists) {
+        _role = UserRole.student;
+        _userData = studentDoc.data();
+        notifyListeners();
+      } else {
+        _role = UserRole.none;
+        _userData = null;
+        notifyListeners();
+      }
+    }, onError: (e) {
+      print("AuthProvider Student Error: $e");
     });
   }
 
@@ -73,7 +93,7 @@ class AuthProvider with ChangeNotifier {
         'role': 'teacher',
         'createdAt': FieldValue.serverTimestamp(),
       });
-      return null; // Success
+      return null;
     } catch (e) {
       return e.toString();
     }
@@ -82,7 +102,6 @@ class AuthProvider with ChangeNotifier {
   Future<String?> login(String email, String password) async {
     try {
       await _auth.signInWithEmailAndPassword(email: email, password: password);
-      // _listenToUserData() is called automatically via authStateChanges listener
       return null;
     } catch (e) {
       return e.toString();
@@ -90,7 +109,21 @@ class AuthProvider with ChangeNotifier {
   }
 
   Future<void> logout() async {
+    _roleSubscription?.cancel();
     await _auth.signOut();
+  }
+
+  Future<String?> updateProfileImage(String imageUrl) async {
+    if (_user == null) return "User not logged in";
+    try {
+      String collection = _role == UserRole.teacher ? 'teachers' : 'students';
+      await _firestore.collection(collection).doc(_user!.uid).update({
+        'profileImage': imageUrl,
+      });
+      return null;
+    } catch (e) {
+      return e.toString();
+    }
   }
 
   Future<String?> resetPassword(String email) async {
@@ -100,5 +133,11 @@ class AuthProvider with ChangeNotifier {
     } catch (e) {
       return e.toString();
     }
+  }
+
+  @override
+  void dispose() {
+    _roleSubscription?.cancel();
+    super.dispose();
   }
 }

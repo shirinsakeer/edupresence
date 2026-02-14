@@ -84,119 +84,168 @@ class _AddStudentState extends State<AddStudent> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        title: const Text('Issue Student Credentials'),
+        title: const Text('Issue Credentials'),
+        elevation: 0,
+        backgroundColor: Colors.white,
+        foregroundColor: const Color(0xFF1E293B),
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(25),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text(
-                "Student Information",
-                style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xFF2C3E50)),
-              ),
-              const SizedBox(height: 5),
-              const Text(
-                "Enter details to create an account and automatically send credentials via email.",
-                style: TextStyle(color: Colors.grey, fontSize: 13),
-              ),
-              const SizedBox(height: 25),
-              TextFormField(
-                controller: nameController,
-                decoration: const InputDecoration(
-                  labelText: 'Full Name',
-                  prefixIcon: Icon(Icons.person_outline),
-                ),
-                validator: (v) => v!.isEmpty ? 'Enter name' : null,
-              ),
-              const SizedBox(height: 20),
-              TextFormField(
-                controller: emailController,
-                keyboardType: TextInputType.emailAddress,
-                decoration: const InputDecoration(
-                  labelText: 'Email Address',
-                  prefixIcon: Icon(Icons.email_outlined),
-                ),
-                validator: (v) => v!.isEmpty || !v.contains('@')
-                    ? 'Enter a valid email'
-                    : null,
-              ),
-              const SizedBox(height: 20),
-              Row(
-                children: [
-                  Expanded(
-                    child: TextFormField(
-                      controller: classController,
-                      decoration: const InputDecoration(
-                        labelText: 'Class/Subject',
-                        prefixIcon: Icon(Icons.class_outlined),
-                      ),
-                      validator: (v) => v!.isEmpty ? 'Enter class' : null,
-                    ),
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(32),
+          child: Form(
+            key: _formKey,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  "Issue Credentials",
+                  style: TextStyle(
+                    fontSize: 28,
+                    fontWeight: FontWeight.w900,
+                    color: Color(0xFF1E293B),
+                    letterSpacing: -0.5,
                   ),
-                  const SizedBox(width: 15),
-                  Expanded(
-                    child: TextFormField(
-                      controller: rollController,
-                      decoration: const InputDecoration(
-                        labelText: 'Roll Number/ID',
-                        prefixIcon: Icon(Icons.numbers_outlined),
-                      ),
-                      validator: (v) => v!.isEmpty ? 'Enter ID' : null,
-                    ),
+                ),
+                const SizedBox(height: 8),
+                const Text(
+                  "Onboard a new scholar with their digital ID.",
+                  style: TextStyle(
+                    color: Color(0xFF64748B),
+                    fontSize: 15,
+                    fontWeight: FontWeight.w500,
                   ),
-                ],
-              ),
-              const SizedBox(height: 40),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: studentProvider.isLoading
-                      ? null
-                      : () async {
-                          if (_formKey.currentState!.validate()) {
-                            String email = emailController.text.trim();
-                            String roll = rollController.text.trim();
-                            String? error = await studentProvider.addStudent(
-                              name: nameController.text.trim(),
-                              email: email,
-                              className: classController.text.trim(),
-                              rollNumber: roll,
-                            );
-                            if (error != null) {
-                              ScaffoldMessenger.of(context)
-                                  .showSnackBar(SnackBar(content: Text(error)));
-                            } else {
-                              _showSuccessDialog(email, "Std${roll}123");
+                ),
+                const SizedBox(height: 32),
+                _buildField(
+                  controller: nameController,
+                  label: "Full Name",
+                  icon: Icons.person_outline_rounded,
+                  validator: (v) => v!.isEmpty ? 'Enter name' : null,
+                ),
+                const SizedBox(height: 20),
+                _buildField(
+                  controller: emailController,
+                  label: "Email Address",
+                  icon: Icons.email_outlined,
+                  keyboardType: TextInputType.emailAddress,
+                  validator: (v) => v!.isEmpty || !v.contains('@')
+                      ? 'Enter a valid email'
+                      : null,
+                ),
+                const SizedBox(height: 20),
+                Row(
+                  children: [
+                    Expanded(
+                      child: _buildField(
+                        controller: classController,
+                        label: "Class/Subject",
+                        icon: Icons.school_outlined,
+                        validator: (v) => v!.isEmpty ? 'Enter class' : null,
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: _buildField(
+                        controller: rollController,
+                        label: "Roll Number/ID",
+                        icon: Icons.numbers_rounded,
+                        validator: (v) => v!.isEmpty ? 'Enter ID' : null,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 48),
+                SizedBox(
+                  width: double.infinity,
+                  height: 56,
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF1A56BE),
+                      foregroundColor: Colors.white,
+                      elevation: 0,
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16)),
+                    ),
+                    onPressed: studentProvider.isLoading
+                        ? null
+                        : () async {
+                            if (_formKey.currentState!.validate()) {
+                              String email = emailController.text.trim();
+                              String roll = rollController.text.trim();
+                              String? error = await studentProvider.addStudent(
+                                name: nameController.text.trim(),
+                                email: email,
+                                className: classController.text.trim(),
+                                rollNumber: roll,
+                              );
+                              if (error != null && mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(content: Text(error)));
+                              } else if (mounted) {
+                                _showSuccessDialog(email, "Std${roll}123");
+                              }
                             }
-                          }
-                        },
-                  child: studentProvider.isLoading
-                      ? const SizedBox(
-                          height: 20,
-                          width: 20,
-                          child: CircularProgressIndicator(
-                              color: Colors.white, strokeWidth: 2))
-                      : const Text('ISSUE CREDENTIALS',
-                          style: TextStyle(fontWeight: FontWeight.bold)),
+                          },
+                    child: studentProvider.isLoading
+                        ? const SizedBox(
+                            height: 24,
+                            width: 24,
+                            child: CircularProgressIndicator(
+                                color: Colors.white, strokeWidth: 3))
+                        : const Text('ISSUE CREDENTIALS',
+                            style: TextStyle(
+                                fontWeight: FontWeight.bold, fontSize: 16)),
+                  ),
                 ),
-              ),
-              const SizedBox(height: 20),
-              const Center(
-                child: Text(
-                  "Note: Credentials will be sent via EmailJS service",
-                  style: TextStyle(color: Colors.grey, fontSize: 11),
+                const SizedBox(height: 24),
+                const Center(
+                  child: Text(
+                    "Note: Credentials will be sent via EmailJS service",
+                    style: TextStyle(
+                        color: Color(0xFF94A3B8),
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500),
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildField({
+    required TextEditingController controller,
+    required String label,
+    required IconData icon,
+    TextInputType? keyboardType,
+    String? Function(String?)? validator,
+  }) {
+    return TextFormField(
+      controller: controller,
+      keyboardType: keyboardType,
+      style: const TextStyle(fontWeight: FontWeight.w600),
+      decoration: InputDecoration(
+        labelText: label,
+        labelStyle: const TextStyle(color: Color(0xFF64748B)),
+        prefixIcon: Icon(icon, color: const Color(0xFF475569)),
+        filled: true,
+        fillColor: const Color(0xFFF8FAFC),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: const BorderSide(color: Color(0xFF1A56BE), width: 2),
+        ),
+      ),
+      validator: validator,
     );
   }
 }
