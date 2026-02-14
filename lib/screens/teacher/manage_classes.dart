@@ -35,7 +35,7 @@ class _ManageClassesState extends State<ManageClasses> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const Text(
-                "Academic Days",
+                "Academic Config",
                 style: TextStyle(
                   fontSize: 28,
                   fontWeight: FontWeight.w900,
@@ -84,7 +84,7 @@ class _ManageClassesState extends State<ManageClasses> {
                 icon: Icons.calendar_month_rounded,
                 keyboardType: TextInputType.number,
               ),
-              const SizedBox(height: 48),
+              const SizedBox(height: 32),
               SizedBox(
                 width: double.infinity,
                 height: 56,
@@ -122,7 +122,8 @@ class _ManageClassesState extends State<ManageClasses> {
                                         Text("Total days updated successfully"),
                                     backgroundColor: Colors.green,
                                     behavior: SnackBarBehavior.floating));
-                            Navigator.pop(context);
+                            _classController.clear();
+                            _daysController.clear();
                           }
                         },
                   style: ElevatedButton.styleFrom(
@@ -142,6 +143,76 @@ class _ManageClassesState extends State<ManageClasses> {
                           style: TextStyle(
                               fontWeight: FontWeight.bold, fontSize: 16)),
                 ),
+              ),
+              const SizedBox(height: 48),
+              const Text(
+                "Existing Configurations",
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF1E293B),
+                ),
+              ),
+              const SizedBox(height: 16),
+              StreamBuilder<QuerySnapshot>(
+                stream: FirebaseFirestore.instance
+                    .collection('classes')
+                    .snapshots(),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
+                  if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                    return const Text("No class configurations yet.",
+                        style: TextStyle(color: Color(0xFF64748B)));
+                  }
+                  return ListView.builder(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    itemCount: snapshot.data!.docs.length,
+                    itemBuilder: (context, index) {
+                      final doc = snapshot.data!.docs[index];
+                      final data = doc.data() as Map<String, dynamic>;
+                      return Container(
+                        margin: const EdgeInsets.only(bottom: 12),
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFF8FAFC),
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(color: const Color(0xFFE2E8F0)),
+                        ),
+                        child: Row(
+                          children: [
+                            const Icon(Icons.school_rounded,
+                                color: Color(0xFF1A56BE)),
+                            const SizedBox(width: 16),
+                            Expanded(
+                              child: Text(
+                                doc.id,
+                                style: const TextStyle(
+                                    fontWeight: FontWeight.bold, fontSize: 16),
+                              ),
+                            ),
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 12, vertical: 6),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFF1A56BE).withOpacity(0.1),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Text(
+                                "${data['totalDays']} Days",
+                                style: const TextStyle(
+                                    color: Color(0xFF1A56BE),
+                                    fontWeight: FontWeight.bold),
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+                  );
+                },
               ),
             ],
           ),
