@@ -14,7 +14,6 @@ class MarkAttendance extends StatefulWidget {
 class _MarkAttendanceState extends State<MarkAttendance> {
   String? selectedClass;
   DateTime selectedDate = DateTime.now();
-
   @override
   Widget build(BuildContext context) {
     final studentProvider = Provider.of<StudentProvider>(context);
@@ -195,26 +194,98 @@ class _MarkAttendanceState extends State<MarkAttendance> {
                                   color: Color(0xFF1E293B))),
                           subtitle: Padding(
                             padding: const EdgeInsets.only(top: 4),
-                            child: Text(
-                              'Current: $currentStatus',
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 12,
-                                color: _getStatusColor(currentStatus),
-                              ),
+                            child: Row(
+                              children: [
+                                Container(
+                                  width: 8,
+                                  height: 8,
+                                  decoration: BoxDecoration(
+                                    color: _getStatusColor(currentStatus),
+                                    shape: BoxShape.circle,
+                                  ),
+                                ),
+                                const SizedBox(width: 6),
+                                Text(
+                                  currentStatus == 'None'
+                                      ? 'Not marked'
+                                      : currentStatus,
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.w600,
+                                    fontSize: 13,
+                                    color: _getStatusColor(currentStatus),
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
                           trailing: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              _statusAction(student.id, 'Present',
-                                  const Color(0xFF10B981), currentStatus),
-                              const SizedBox(width: 8),
-                              _statusAction(student.id, 'Late',
-                                  const Color(0xFFF59E0B), currentStatus),
-                              const SizedBox(width: 8),
-                              _statusAction(student.id, 'Absent',
-                                  const Color(0xFFEF4444), currentStatus),
+                              AnimatedContainer(
+                                duration: const Duration(milliseconds: 300),
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 12, vertical: 6),
+                                decoration: BoxDecoration(
+                                  color: currentStatus == 'Absent'
+                                      ? const Color(0xFFEF4444).withOpacity(0.1)
+                                      : Colors.transparent,
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: Text(
+                                  'Absent',
+                                  style: TextStyle(
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w700,
+                                    color: currentStatus == 'Absent'
+                                        ? const Color(0xFFEF4444)
+                                        : const Color(0xFF94A3B8),
+                                  ),
+                                ),
+                              ),
+                              Transform.scale(
+                                scale: 0.9,
+                                child: Switch(
+                                  value: currentStatus == 'Present',
+                                  activeColor: const Color(0xFF10B981),
+                                  inactiveThumbColor: const Color(0xFFEF4444),
+                                  inactiveTrackColor:
+                                      const Color(0xFFEF4444).withOpacity(0.3),
+                                  activeTrackColor:
+                                      const Color(0xFF10B981).withOpacity(0.3),
+                                  onChanged: (value) {
+                                    final dateKey = DateFormat('yyyy-MM-dd')
+                                        .format(selectedDate);
+                                    Provider.of<StudentProvider>(context,
+                                            listen: false)
+                                        .markAttendance(
+                                      studentId: student.id,
+                                      date: dateKey,
+                                      status: value ? 'Present' : 'Absent',
+                                    );
+                                  },
+                                ),
+                              ),
+                              AnimatedContainer(
+                                duration: const Duration(milliseconds: 300),
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 12, vertical: 6),
+                                decoration: BoxDecoration(
+                                  color: currentStatus == 'Present'
+                                      ? const Color(0xFF10B981).withOpacity(0.1)
+                                      : Colors.transparent,
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: Text(
+                                  'Present',
+                                  style: TextStyle(
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w700,
+                                    color: currentStatus == 'Present'
+                                        ? const Color(0xFF10B981)
+                                        : const Color(0xFF94A3B8),
+                                  ),
+                                ),
+                              ),
                             ],
                           ),
                         ),
@@ -248,43 +319,10 @@ class _MarkAttendanceState extends State<MarkAttendance> {
     switch (status) {
       case 'Present':
         return const Color(0xFF10B981);
-      case 'Late':
-        return const Color(0xFFF59E0B);
       case 'Absent':
         return const Color(0xFFEF4444);
       default:
-        return Color(0xFF94A3B8);
+        return const Color(0xFF94A3B8);
     }
-  }
-
-  Widget _statusAction(
-      String studentId, String status, Color color, String currentStatus) {
-    bool isSelected = currentStatus == status;
-    return GestureDetector(
-      onTap: () {
-        final dateKey = DateFormat('yyyy-MM-dd').format(selectedDate);
-        Provider.of<StudentProvider>(context, listen: false).markAttendance(
-          studentId: studentId,
-          date: dateKey,
-          status: status,
-        );
-      },
-      child: Container(
-        padding: const EdgeInsets.all(8),
-        decoration: BoxDecoration(
-          color: isSelected ? color : color.withOpacity(0.1),
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Icon(
-          status == 'Present'
-              ? Icons.check_rounded
-              : (status == 'Late'
-                  ? Icons.access_time_rounded
-                  : Icons.close_rounded),
-          size: 20,
-          color: isSelected ? Colors.white : color,
-        ),
-      ),
-    );
   }
 }

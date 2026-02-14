@@ -425,11 +425,6 @@ class TeacherStudentsTab extends StatelessWidget {
         title: const Text('Student Directory'),
         actions: [
           IconButton(
-            icon: const Icon(Icons.person_add_alt_1_rounded),
-            onPressed: () => Navigator.push(context,
-                MaterialPageRoute(builder: (context) => const AddStudent())),
-          ),
-          IconButton(
               icon: const Icon(Icons.auto_awesome_rounded,
                   color: Color(0xFF1A56BE)),
               onPressed: () => Navigator.push(
@@ -510,6 +505,18 @@ class TeacherStudentsTab extends StatelessWidget {
             },
           );
         },
+      ),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () => Navigator.push(context,
+            MaterialPageRoute(builder: (context) => const AddStudent())),
+        backgroundColor: const Color(0xFF1A56BE),
+        foregroundColor: Colors.white,
+        elevation: 6,
+        icon: const Icon(Icons.person_add_rounded),
+        label: const Text(
+          'Add Student',
+          style: TextStyle(fontWeight: FontWeight.w700, fontSize: 15),
+        ),
       ),
     );
   }
