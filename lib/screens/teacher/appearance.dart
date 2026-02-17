@@ -193,16 +193,18 @@ class AppearanceScreen extends StatelessWidget {
   }) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: isSelected ? const Color(0xFF1A56BE) : const Color(0xFFE2E8F0),
+          color: isSelected
+              ? Theme.of(context).primaryColor
+              : Theme.of(context).dividerColor,
           width: isSelected ? 2 : 1,
         ),
         boxShadow: isSelected
             ? [
                 BoxShadow(
-                  color: const Color(0xFF1A56BE).withOpacity(0.1),
+                  color: Theme.of(context).primaryColor.withOpacity(0.1),
                   blurRadius: 10,
                   offset: const Offset(0, 4),
                 ),
@@ -220,15 +222,15 @@ class AppearanceScreen extends StatelessWidget {
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
                   color: isSelected
-                      ? const Color(0xFF1A56BE).withOpacity(0.1)
-                      : const Color(0xFFF1F5F9),
+                      ? Theme.of(context).primaryColor.withOpacity(0.1)
+                      : Theme.of(context).scaffoldBackgroundColor,
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Icon(
                   icon,
                   color: isSelected
-                      ? const Color(0xFF1A56BE)
-                      : const Color(0xFF64748B),
+                      ? Theme.of(context).primaryColor
+                      : Theme.of(context).iconTheme.color?.withOpacity(0.7),
                   size: 24,
                 ),
               ),
@@ -243,16 +245,20 @@ class AppearanceScreen extends StatelessWidget {
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
                         color: isSelected
-                            ? const Color(0xFF1A56BE)
-                            : const Color(0xFF1E293B),
+                            ? Theme.of(context).primaryColor
+                            : Theme.of(context).textTheme.bodyLarge?.color,
                       ),
                     ),
                     const SizedBox(height: 4),
                     Text(
                       subtitle,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 13,
-                        color: Color(0xFF64748B),
+                        color: Theme.of(context)
+                            .textTheme
+                            .bodyMedium
+                            ?.color
+                            ?.withOpacity(0.7),
                       ),
                     ),
                   ],
@@ -261,8 +267,8 @@ class AppearanceScreen extends StatelessWidget {
               if (isSelected)
                 Container(
                   padding: const EdgeInsets.all(4),
-                  decoration: const BoxDecoration(
-                    color: Color(0xFF1A56BE),
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).primaryColor,
                     shape: BoxShape.circle,
                   ),
                   child: const Icon(

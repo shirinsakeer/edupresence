@@ -30,32 +30,34 @@ class _MarkAttendanceState extends State<MarkAttendance> {
   ];
 
   @override
+  @override
   Widget build(BuildContext context) {
     final studentProvider = Provider.of<StudentProvider>(context);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         title: const Text('Mark Attendance'),
         elevation: 0,
-        backgroundColor: Colors.white,
-        foregroundColor: const Color(0xFF1E293B),
+        backgroundColor: Theme.of(context).appBarTheme.backgroundColor,
+        foregroundColor: Theme.of(context).appBarTheme.iconTheme?.color,
       ),
       body: Column(
         children: [
           Container(
             padding: const EdgeInsets.all(20),
-            decoration: const BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.only(
+            decoration: BoxDecoration(
+              color: Theme.of(context).cardColor,
+              borderRadius: const BorderRadius.only(
                 bottomLeft: Radius.circular(30),
                 bottomRight: Radius.circular(30),
               ),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black12,
+                  color: Colors.black.withOpacity(0.05),
                   blurRadius: 10,
-                  offset: Offset(0, 4),
+                  offset: const Offset(0, 4),
                 )
               ],
             ),
@@ -66,12 +68,24 @@ class _MarkAttendanceState extends State<MarkAttendance> {
                     Expanded(
                       child: DropdownButtonFormField<String>(
                         value: selectedDepartment,
+                        dropdownColor: Theme.of(context).cardColor,
+                        style: TextStyle(
+                            color: Theme.of(context).textTheme.bodyLarge?.color,
+                            fontWeight: FontWeight.w500),
                         decoration: InputDecoration(
                           hintText: 'Select Department',
-                          prefixIcon: const Icon(Icons.business_rounded,
-                              color: Color(0xFF1A56BE)),
+                          hintStyle: TextStyle(
+                              color: Theme.of(context)
+                                  .textTheme
+                                  .bodyMedium
+                                  ?.color
+                                  ?.withOpacity(0.6)),
+                          prefixIcon: Icon(Icons.business_rounded,
+                              color: Theme.of(context).primaryColor),
                           filled: true,
-                          fillColor: const Color(0xFFF1F5F9),
+                          fillColor: isDark
+                              ? Theme.of(context).scaffoldBackgroundColor
+                              : const Color(0xFFF1F5F9),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(16),
                             borderSide: BorderSide.none,
@@ -104,12 +118,24 @@ class _MarkAttendanceState extends State<MarkAttendance> {
                     Expanded(
                       child: DropdownButtonFormField<String>(
                         value: selectedSemester,
+                        dropdownColor: Theme.of(context).cardColor,
+                        style: TextStyle(
+                            color: Theme.of(context).textTheme.bodyLarge?.color,
+                            fontWeight: FontWeight.w500),
                         decoration: InputDecoration(
                           hintText: 'Select Semester',
-                          prefixIcon: const Icon(Icons.school_rounded,
-                              color: Color(0xFF1A56BE)),
+                          hintStyle: TextStyle(
+                              color: Theme.of(context)
+                                  .textTheme
+                                  .bodyMedium
+                                  ?.color
+                                  ?.withOpacity(0.6)),
+                          prefixIcon: Icon(Icons.school_rounded,
+                              color: Theme.of(context).primaryColor),
                           filled: true,
-                          fillColor: const Color(0xFFF1F5F9),
+                          fillColor: isDark
+                              ? Theme.of(context).scaffoldBackgroundColor
+                              : const Color(0xFFF1F5F9),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(16),
                             borderSide: BorderSide.none,
@@ -136,9 +162,13 @@ class _MarkAttendanceState extends State<MarkAttendance> {
                       builder: (context, child) {
                         return Theme(
                           data: Theme.of(context).copyWith(
-                            colorScheme: const ColorScheme.light(
-                              primary: Color(0xFF1A56BE),
-                            ),
+                            colorScheme: isDark
+                                ? ColorScheme.dark(
+                                    primary: Theme.of(context).primaryColor,
+                                    onPrimary: Colors.white,
+                                    surface: const Color(0xFF1E293B))
+                                : ColorScheme.light(
+                                    primary: Theme.of(context).primaryColor),
                           ),
                           child: child!,
                         );
@@ -150,22 +180,23 @@ class _MarkAttendanceState extends State<MarkAttendance> {
                     padding: const EdgeInsets.symmetric(
                         horizontal: 16, vertical: 12),
                     decoration: BoxDecoration(
-                      color: const Color(0xFF1A56BE).withOpacity(0.05),
+                      color: Theme.of(context).primaryColor.withOpacity(0.05),
                       borderRadius: BorderRadius.circular(16),
                       border: Border.all(
-                          color: const Color(0xFF1A56BE).withOpacity(0.1)),
+                          color:
+                              Theme.of(context).primaryColor.withOpacity(0.1)),
                     ),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        const Icon(Icons.calendar_today_rounded,
-                            size: 18, color: Color(0xFF1A56BE)),
+                        Icon(Icons.calendar_today_rounded,
+                            size: 18, color: Theme.of(context).primaryColor),
                         const SizedBox(width: 10),
                         Text(
                           DateFormat('EEEE, dd MMM yyyy').format(selectedDate),
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontWeight: FontWeight.bold,
-                            color: Color(0xFF1A56BE),
+                            color: Theme.of(context).primaryColor,
                           ),
                         ),
                       ],
@@ -182,9 +213,9 @@ class _MarkAttendanceState extends State<MarkAttendance> {
                     selectedDepartment!, selectedSemester!),
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.waiting) {
-                    return const Center(
+                    return Center(
                         child: CircularProgressIndicator(
-                            color: Color(0xFF1A56BE)));
+                            color: Theme.of(context).primaryColor));
                   }
                   if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
                     return Center(
@@ -192,10 +223,15 @@ class _MarkAttendanceState extends State<MarkAttendance> {
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Icon(Icons.group_off_rounded,
-                              size: 64, color: Colors.grey[300]),
+                              size: 64, color: Theme.of(context).dividerColor),
                           const SizedBox(height: 16),
-                          const Text('No students found',
-                              style: TextStyle(color: Color(0xFF64748B))),
+                          Text('No students found',
+                              style: TextStyle(
+                                  color: Theme.of(context)
+                                      .textTheme
+                                      .bodyMedium
+                                      ?.color
+                                      ?.withOpacity(0.6))),
                         ],
                       ),
                     );
@@ -217,30 +253,34 @@ class _MarkAttendanceState extends State<MarkAttendance> {
                       return Container(
                         margin: const EdgeInsets.only(bottom: 12),
                         decoration: BoxDecoration(
-                          color: Colors.white,
+                          color: Theme.of(context).cardColor,
                           borderRadius: BorderRadius.circular(20),
-                          border: Border.all(color: const Color(0xFFE2E8F0)),
+                          border:
+                              Border.all(color: Theme.of(context).dividerColor),
                         ),
                         child: ListTile(
                           contentPadding: const EdgeInsets.all(12),
                           leading: CircleAvatar(
                             radius: 24,
                             backgroundColor:
-                                const Color(0xFF1A56BE).withOpacity(0.1),
+                                Theme.of(context).primaryColor.withOpacity(0.1),
                             backgroundImage: studentData['profileImage'] != null
                                 ? NetworkImage(studentData['profileImage'])
                                 : null,
                             child: studentData['profileImage'] == null
                                 ? Text(studentData['name']?[0] ?? 'S',
-                                    style: const TextStyle(
-                                        color: Color(0xFF1A56BE),
+                                    style: TextStyle(
+                                        color: Theme.of(context).primaryColor,
                                         fontWeight: FontWeight.bold))
                                 : null,
                           ),
                           title: Text(studentData['name'],
-                              style: const TextStyle(
+                              style: TextStyle(
                                   fontWeight: FontWeight.w800,
-                                  color: Color(0xFF1E293B))),
+                                  color: Theme.of(context)
+                                      .textTheme
+                                      .bodyLarge
+                                      ?.color)),
                           subtitle: Padding(
                             padding: const EdgeInsets.only(top: 4),
                             child: Row(
@@ -270,27 +310,7 @@ class _MarkAttendanceState extends State<MarkAttendance> {
                           trailing: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              AnimatedContainer(
-                                duration: const Duration(milliseconds: 300),
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 12, vertical: 6),
-                                decoration: BoxDecoration(
-                                  color: currentStatus == 'Absent'
-                                      ? const Color(0xFFEF4444).withOpacity(0.1)
-                                      : Colors.transparent,
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                                child: Text(
-                                  'Absent',
-                                  style: TextStyle(
-                                    fontSize: 13,
-                                    fontWeight: FontWeight.w700,
-                                    color: currentStatus == 'Absent'
-                                        ? const Color(0xFFEF4444)
-                                        : const Color(0xFF94A3B8),
-                                  ),
-                                ),
-                              ),
+                              // Simplified UI for space
                               Transform.scale(
                                 scale: 0.9,
                                 child: Switch(
@@ -322,27 +342,6 @@ class _MarkAttendanceState extends State<MarkAttendance> {
                                   },
                                 ),
                               ),
-                              AnimatedContainer(
-                                duration: const Duration(milliseconds: 300),
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 12, vertical: 6),
-                                decoration: BoxDecoration(
-                                  color: currentStatus == 'Present'
-                                      ? const Color(0xFF10B981).withOpacity(0.1)
-                                      : Colors.transparent,
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                                child: Text(
-                                  'Present',
-                                  style: TextStyle(
-                                    fontSize: 13,
-                                    fontWeight: FontWeight.w700,
-                                    color: currentStatus == 'Present'
-                                        ? const Color(0xFF10B981)
-                                        : const Color(0xFF94A3B8),
-                                  ),
-                                ),
-                              ),
                             ],
                           ),
                         ),
@@ -359,10 +358,15 @@ class _MarkAttendanceState extends State<MarkAttendance> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Icon(Icons.arrow_upward_rounded,
-                        size: 48, color: Colors.grey[300]),
+                        size: 48, color: Theme.of(context).dividerColor),
                     const SizedBox(height: 16),
-                    const Text('Select department and semester',
-                        style: TextStyle(color: Color(0xFF64748B))),
+                    Text('Select department and semester',
+                        style: TextStyle(
+                            color: Theme.of(context)
+                                .textTheme
+                                .bodyMedium
+                                ?.color
+                                ?.withOpacity(0.6))),
                   ],
                 ),
               ),

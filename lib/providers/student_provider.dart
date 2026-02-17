@@ -149,9 +149,27 @@ class StudentProvider with ChangeNotifier {
     required String date,
     required String status,
   }) async {
-    await _firestore.collection('students').doc(studentId).update({
+    final batch = _firestore.batch();
+
+    // Update attendance
+    final studentRef = _firestore.collection('students').doc(studentId);
+    batch.update(studentRef, {
       'attendance.$date': status,
     });
+
+    // Create notification
+    final notificationRef = studentRef.collection('notifications').doc();
+    batch.set(notificationRef, {
+      'title': 'Attendance Update',
+      'message': 'Your attendance for $date has been marked as $status.',
+      'type': 'attendance',
+      'status': status,
+      'date': date,
+      'read': false,
+      'createdAt': FieldValue.serverTimestamp(),
+    });
+
+    await batch.commit();
   }
 
   Future<void> updateStudentWorkingHours(String studentId, int hours) async {

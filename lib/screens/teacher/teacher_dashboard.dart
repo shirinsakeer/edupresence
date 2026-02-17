@@ -4,7 +4,6 @@ import 'package:edupresence/providers/student_provider.dart';
 import 'package:edupresence/screens/teacher/add_student.dart';
 import 'package:edupresence/screens/teacher/manage_classes.dart';
 import 'package:edupresence/screens/teacher/mark_attendance.dart';
-import 'package:edupresence/screens/student/chatbot.dart';
 import 'package:edupresence/services/cloudinary_service.dart';
 import 'package:edupresence/screens/teacher/change_password.dart';
 import 'package:edupresence/screens/teacher/appearance.dart';
@@ -109,19 +108,7 @@ class TeacherHomeTab extends StatelessWidget {
               height: 60, // Increased logo size in app bar
               errorBuilder: (c, e, s) => const Text("EduPresence")),
         ),
-        actions: [
-          Container(
-            margin: const EdgeInsets.only(right: 16),
-            decoration: BoxDecoration(
-              color: Theme.of(context).cardColor,
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: IconButton(
-                icon: Icon(Icons.notifications_none_rounded,
-                    color: Theme.of(context).iconTheme.color),
-                onPressed: () {}),
-          ),
-        ],
+        actions: [],
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(24),
@@ -343,17 +330,6 @@ class TeacherHomeTab extends StatelessWidget {
                   MaterialPageRoute(
                       builder: (context) => const ManageClasses())),
             ),
-            _actionTile(
-              context,
-              "Smart AI Assistant",
-              "Insights, reports, and guidance",
-              Icons.auto_awesome_rounded,
-              const Color(0xFF6366F1),
-              () => Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                      builder: (context) => const ChatBotScreen())),
-            ),
           ],
         ),
       ),
@@ -460,13 +436,6 @@ class TeacherStudentsTab extends StatelessWidget {
         backgroundColor: Theme.of(context).appBarTheme.backgroundColor,
         foregroundColor: Theme.of(context).appBarTheme.iconTheme!.color,
         actions: [
-          IconButton(
-              icon: Icon(Icons.auto_awesome_rounded,
-                  color: Theme.of(context).primaryColor),
-              onPressed: () => Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                      builder: (context) => const ChatBotScreen()))),
           const SizedBox(width: 8),
         ],
       ),
