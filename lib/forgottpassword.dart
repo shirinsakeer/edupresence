@@ -44,7 +44,7 @@ class _ForgottpasswordState extends State<Forgottpassword> {
                     tag: 'logo',
                     child: Image.asset(
                       "assets/logo.png",
-                      height: 150,
+                      height: 250,
                       errorBuilder: (context, error, stackTrace) => Container(
                         padding: const EdgeInsets.all(20),
                         decoration: BoxDecoration(
@@ -53,7 +53,7 @@ class _ForgottpasswordState extends State<Forgottpassword> {
                         ),
                         child: const Icon(
                           Icons.lock_reset_rounded,
-                          size: 80,
+                          size: 120,
                           color: Color(0xFF1A56BE),
                         ),
                       ),

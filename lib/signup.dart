@@ -76,7 +76,7 @@ class _SignupState extends State<Signup> {
                         tag: 'logo',
                         child: Image.asset(
                           "assets/logo.png",
-                          height: 120, // Slightly smaller for signup
+                          height: 200, // Increased for visibility
                           errorBuilder: (context, error, stackTrace) =>
                               Container(
                             padding: const EdgeInsets.all(16),
@@ -86,7 +86,7 @@ class _SignupState extends State<Signup> {
                             ),
                             child: const Icon(
                               Icons.school_rounded,
-                              size: 60,
+                              size: 100,
                               color: Color(0xFF1A56BE),
                             ),
                           ),

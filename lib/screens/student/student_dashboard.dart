@@ -98,9 +98,10 @@ class StudentHomeTab extends StatelessWidget {
         : (totalRecorded == 0 ? 0 : (presentDays / totalRecorded) * 100);
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         automaticallyImplyLeading: false,
+        backgroundColor: Theme.of(context).appBarTheme.backgroundColor,
         title: Hero(
           tag: 'logo',
           child: Image.asset("assets/logo.png",
@@ -108,8 +109,8 @@ class StudentHomeTab extends StatelessWidget {
         ),
         actions: [
           IconButton(
-              icon: const Icon(Icons.auto_awesome_rounded,
-                  color: Color(0xFF1A56BE)),
+              icon: Icon(Icons.auto_awesome_rounded,
+                  color: Theme.of(context).primaryColor),
               onPressed: () => Navigator.push(
                   context,
                   MaterialPageRoute(
@@ -128,10 +129,10 @@ class StudentHomeTab extends StatelessWidget {
                 children: [
                   Text(
                       'Aloha, ${userData?['name']?.split(' ')[0] ?? 'Student'}!',
-                      style: const TextStyle(
+                      style: TextStyle(
                           fontSize: 28,
                           fontWeight: FontWeight.w900,
-                          color: Color(0xFF1E293B),
+                          color: Theme.of(context).textTheme.bodyLarge?.color,
                           letterSpacing: -0.5)),
                   const SizedBox(height: 4),
                   Row(
@@ -140,19 +141,21 @@ class StudentHomeTab extends StatelessWidget {
                         padding: const EdgeInsets.symmetric(
                             horizontal: 12, vertical: 6),
                         decoration: BoxDecoration(
-                          color: const Color(0xFF1A56BE).withOpacity(0.1),
+                          color:
+                              Theme.of(context).primaryColor.withOpacity(0.1),
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            const Icon(Icons.school_rounded,
-                                size: 14, color: Color(0xFF1A56BE)),
+                            Icon(Icons.school_rounded,
+                                size: 14,
+                                color: Theme.of(context).primaryColor),
                             const SizedBox(width: 4),
                             Text(
                               '$department • $semester',
-                              style: const TextStyle(
-                                color: Color(0xFF1A56BE),
+                              style: TextStyle(
+                                color: Theme.of(context).primaryColor,
                                 fontSize: 12,
                                 fontWeight: FontWeight.bold,
                               ),
@@ -167,14 +170,18 @@ class StudentHomeTab extends StatelessWidget {
                     width: double.infinity,
                     padding: const EdgeInsets.all(28),
                     decoration: BoxDecoration(
-                      gradient: const LinearGradient(
+                      gradient: LinearGradient(
                           begin: Alignment.topLeft,
                           end: Alignment.bottomRight,
-                          colors: [Color(0xFF1A56BE), Color(0xFF0369A1)]),
+                          colors: [
+                            Theme.of(context).primaryColor,
+                            Theme.of(context).primaryColor.withOpacity(0.8)
+                          ]),
                       borderRadius: BorderRadius.circular(24),
                       boxShadow: [
                         BoxShadow(
-                            color: const Color(0xFF1A56BE).withOpacity(0.2),
+                            color:
+                                Theme.of(context).primaryColor.withOpacity(0.2),
                             blurRadius: 20,
                             offset: const Offset(0, 10))
                       ],
@@ -220,11 +227,14 @@ class StudentHomeTab extends StatelessWidget {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Text("Activity Timeline",
+                      Text("Activity Timeline",
                           style: TextStyle(
                               fontSize: 20,
                               fontWeight: FontWeight.w800,
-                              color: Color(0xFF1E293B))),
+                              color: Theme.of(context)
+                                  .textTheme
+                                  .bodyLarge
+                                  ?.color)),
                       TextButton(
                         onPressed: () {},
                         child: const Text("View All",
@@ -264,16 +274,20 @@ class StudentHomeTab extends StatelessWidget {
                         return Container(
                           margin: const EdgeInsets.only(bottom: 12),
                           decoration: BoxDecoration(
-                            color: Colors.white,
+                            color: Theme.of(context).cardColor,
                             borderRadius: BorderRadius.circular(18),
-                            border: Border.all(color: const Color(0xFFE2E8F0)),
+                            border: Border.all(
+                                color: Theme.of(context).dividerColor),
                           ),
                           child: ListTile(
                             leading: _statusIcon(status),
                             title: Text(date,
-                                style: const TextStyle(
+                                style: TextStyle(
                                     fontWeight: FontWeight.w700,
-                                    color: Color(0xFF1E293B))),
+                                    color: Theme.of(context)
+                                        .textTheme
+                                        .bodyLarge
+                                        ?.color)),
                             trailing: Container(
                               padding: const EdgeInsets.symmetric(
                                   horizontal: 12, vertical: 6),
@@ -400,12 +414,12 @@ class _StudentProfileTabState extends State<StudentProfileTab> {
     final String? profileImageUrl = userData?['profileImage'];
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         title: const Text('Digital ID'),
         elevation: 0,
-        backgroundColor: Colors.white,
-        foregroundColor: const Color(0xFF1E293B),
+        backgroundColor: Theme.of(context).appBarTheme.backgroundColor,
+        foregroundColor: Theme.of(context).appBarTheme.iconTheme!.color,
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(24),
@@ -414,9 +428,9 @@ class _StudentProfileTabState extends State<StudentProfileTab> {
             Container(
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: Theme.of(context).cardColor,
                   borderRadius: BorderRadius.circular(24),
-                  border: Border.all(color: const Color(0xFFE2E8F0)),
+                  border: Border.all(color: Theme.of(context).dividerColor),
                   boxShadow: [
                     BoxShadow(
                         color: Colors.black.withOpacity(0.02),
@@ -432,7 +446,7 @@ class _StudentProfileTabState extends State<StudentProfileTab> {
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
                           border: Border.all(
-                              color: const Color(0xFF1A56BE), width: 2),
+                              color: Theme.of(context).primaryColor, width: 2),
                         ),
                         child: CircleAvatar(
                           radius: 55,
@@ -447,9 +461,9 @@ class _StudentProfileTabState extends State<StudentProfileTab> {
                         ),
                       ),
                       if (_isUploading)
-                        const Positioned.fill(
+                        Positioned.fill(
                           child: CircularProgressIndicator(
-                            color: Color(0xFF1A56BE),
+                            color: Theme.of(context).primaryColor,
                             strokeWidth: 3,
                           ),
                         ),
@@ -458,8 +472,8 @@ class _StudentProfileTabState extends State<StudentProfileTab> {
                             _isUploading ? null : () => _pickAndUploadImage(),
                         child: Container(
                           padding: const EdgeInsets.all(8),
-                          decoration: const BoxDecoration(
-                            color: Color(0xFF1A56BE),
+                          decoration: BoxDecoration(
+                            color: Theme.of(context).primaryColor,
                             shape: BoxShape.circle,
                           ),
                           child: const Icon(Icons.camera_alt_rounded,
@@ -471,34 +485,31 @@ class _StudentProfileTabState extends State<StudentProfileTab> {
                   const SizedBox(height: 20),
                   Text(userData?['name'] ?? 'Scholar',
                       textAlign: TextAlign.center,
-                      style: const TextStyle(
+                      style: TextStyle(
                           fontSize: 24,
                           fontWeight: FontWeight.w900,
-                          color: Color(0xFF1E293B))),
+                          color: Theme.of(context).textTheme.bodyLarge?.color)),
                   Text(userData?['email'] ?? 'N/A',
                       style: const TextStyle(
                           color: Color(0xFF64748B),
                           fontWeight: FontWeight.w500)),
                   const SizedBox(height: 24),
-                  const Divider(height: 1),
+                  Divider(height: 1, color: Theme.of(context).dividerColor),
                   const SizedBox(height: 24),
                   Row(
                     children: [
-                      _idBadge("CLASS", userData?['className'] ?? 'N/A',
-                          Icons.school_rounded),
-                      const SizedBox(width: 16),
                       _idBadge("ROLL #", userData?['rollNumber'] ?? 'N/A',
-                          Icons.badge_rounded),
+                          Icons.badge_rounded, context),
+                      const SizedBox(width: 16),
+                      _idBadge("SEMESTER", userData?['semester'] ?? 'N/A',
+                          Icons.calendar_today_rounded, context),
                     ],
                   ),
                   const SizedBox(height: 16),
                   Row(
                     children: [
                       _idBadge("DEPARTMENT", userData?['department'] ?? 'N/A',
-                          Icons.business_rounded),
-                      const SizedBox(width: 16),
-                      _idBadge("SEMESTER", userData?['semester'] ?? 'N/A',
-                          Icons.calendar_today_rounded),
+                          Icons.business_rounded, context),
                     ],
                   ),
                 ],
@@ -558,7 +569,7 @@ class _StudentProfileTabState extends State<StudentProfileTab> {
               width: double.infinity,
               child: ElevatedButton.icon(
                 style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.white,
+                    backgroundColor: Theme.of(context).cardColor,
                     foregroundColor: const Color(0xFFEF4444),
                     elevation: 0,
                     side: const BorderSide(color: Color(0xFFFEE2E2)),
@@ -577,14 +588,15 @@ class _StudentProfileTabState extends State<StudentProfileTab> {
     );
   }
 
-  Widget _idBadge(String label, String value, IconData icon) {
+  Widget _idBadge(
+      String label, String value, IconData icon, BuildContext context) {
     return Expanded(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              Icon(icon, size: 12, color: const Color(0xFF1A56BE)),
+              Icon(icon, size: 12, color: Theme.of(context).primaryColor),
               const SizedBox(width: 4),
               Text(label,
                   style: const TextStyle(
@@ -595,10 +607,10 @@ class _StudentProfileTabState extends State<StudentProfileTab> {
           ),
           const SizedBox(height: 4),
           Text(value,
-              style: const TextStyle(
+              style: TextStyle(
                   fontSize: 15,
                   fontWeight: FontWeight.w800,
-                  color: Color(0xFF1E293B))),
+                  color: Theme.of(context).textTheme.bodyLarge?.color)),
         ],
       ),
     );

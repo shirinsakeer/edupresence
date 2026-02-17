@@ -1,6 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:edupresence/providers/student_provider.dart';
-import 'package:edupresence/providers/auth_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
@@ -33,8 +32,6 @@ class _MarkAttendanceState extends State<MarkAttendance> {
   @override
   Widget build(BuildContext context) {
     final studentProvider = Provider.of<StudentProvider>(context);
-    final authProvider = Provider.of<AuthProvider>(context);
-    final teacherDepartment = authProvider.userData?['department'];
 
     return Scaffold(
       backgroundColor: const Color(0xFFF8FAFC),
@@ -67,30 +64,63 @@ class _MarkAttendanceState extends State<MarkAttendance> {
                 Row(
                   children: [
                     Expanded(
-                      child: StreamBuilder<List<String>>(
-                        stream: studentProvider.getAllClasses(),
-                        builder: (context, snapshot) {
-                          final classes = snapshot.data ?? [];
-                          return DropdownButtonFormField<String>(
-                            value: selectedClass,
-                            decoration: InputDecoration(
-                              hintText: 'Choose Class',
-                              prefixIcon: const Icon(Icons.school_rounded,
-                                  color: Color(0xFF1A56BE)),
-                              filled: true,
-                              fillColor: const Color(0xFFF1F5F9),
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(16),
-                                borderSide: BorderSide.none,
-                              ),
-                            ),
-                            items: classes
-                                .map((e) =>
-                                    DropdownMenuItem(value: e, child: Text(e)))
-                                .toList(),
-                            onChanged: (v) => setState(() => selectedClass = v),
-                          );
-                        },
+                      child: DropdownButtonFormField<String>(
+                        value: selectedDepartment,
+                        decoration: InputDecoration(
+                          hintText: 'Select Department',
+                          prefixIcon: const Icon(Icons.business_rounded,
+                              color: Color(0xFF1A56BE)),
+                          filled: true,
+                          fillColor: const Color(0xFFF1F5F9),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(16),
+                            borderSide: BorderSide.none,
+                          ),
+                        ),
+                        items: [
+                          'Computer Science',
+                          'Information Technology',
+                          'Electronics',
+                          'Mechanical',
+                          'Civil',
+                          'Electrical',
+                          'Mathematics',
+                          'Physics',
+                          'Chemistry',
+                          'Other',
+                        ]
+                            .map((e) =>
+                                DropdownMenuItem(value: e, child: Text(e)))
+                            .toList(),
+                        onChanged: (v) =>
+                            setState(() => selectedDepartment = v),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                Row(
+                  children: [
+                    Expanded(
+                      child: DropdownButtonFormField<String>(
+                        value: selectedSemester,
+                        decoration: InputDecoration(
+                          hintText: 'Select Semester',
+                          prefixIcon: const Icon(Icons.school_rounded,
+                              color: Color(0xFF1A56BE)),
+                          filled: true,
+                          fillColor: const Color(0xFFF1F5F9),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(16),
+                            borderSide: BorderSide.none,
+                          ),
+                        ),
+                        items: semesters
+                            .where((s) => s != 'All')
+                            .map((e) =>
+                                DropdownMenuItem(value: e, child: Text(e)))
+                            .toList(),
+                        onChanged: (v) => setState(() => selectedSemester = v),
                       ),
                     ),
                   ],
@@ -145,10 +175,11 @@ class _MarkAttendanceState extends State<MarkAttendance> {
               ],
             ),
           ),
-          if (selectedClass != null)
+          if (selectedDepartment != null && selectedSemester != null)
             Expanded(
               child: StreamBuilder<QuerySnapshot>(
-                stream: studentProvider.getStudentsByClass(selectedClass!),
+                stream: studentProvider.getStudentsByDepartmentAndSemester(
+                    selectedDepartment!, selectedSemester!),
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.waiting) {
                     return const Center(
@@ -163,7 +194,7 @@ class _MarkAttendanceState extends State<MarkAttendance> {
                           Icon(Icons.group_off_rounded,
                               size: 64, color: Colors.grey[300]),
                           const SizedBox(height: 16),
-                          const Text('No students found in this class',
+                          const Text('No students found',
                               style: TextStyle(color: Color(0xFF64748B))),
                         ],
                       ),
@@ -330,7 +361,7 @@ class _MarkAttendanceState extends State<MarkAttendance> {
                     Icon(Icons.arrow_upward_rounded,
                         size: 48, color: Colors.grey[300]),
                     const SizedBox(height: 16),
-                    const Text('Select a class to start marking',
+                    const Text('Select department and semester',
                         style: TextStyle(color: Color(0xFF64748B))),
                   ],
                 ),
@@ -340,6 +371,8 @@ class _MarkAttendanceState extends State<MarkAttendance> {
       ),
     );
   }
+
+  String? selectedDepartment; // Added variable
 
   Color _getStatusColor(String status) {
     switch (status) {

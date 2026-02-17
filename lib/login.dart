@@ -53,7 +53,7 @@ class _LoginState extends State<Login> {
                       tag: 'logo',
                       child: Image.asset(
                         "assets/logo.png",
-                        height: 250, // Increased size
+                        height: 350, // Increased size for visibility
                         errorBuilder: (context, error, stackTrace) => Container(
                           padding: const EdgeInsets.all(20),
                           decoration: BoxDecoration(
@@ -62,7 +62,7 @@ class _LoginState extends State<Login> {
                           ),
                           child: const Icon(
                             Icons.school_rounded,
-                            size: 120, // Increased icon size
+                            size: 180, // Increased icon size
                             color: Color(0xFF1A56BE),
                           ),
                         ),

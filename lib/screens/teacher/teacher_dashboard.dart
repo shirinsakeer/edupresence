@@ -99,9 +99,10 @@ class TeacherHomeTab extends StatelessWidget {
     final studentProvider = Provider.of<StudentProvider>(context);
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         automaticallyImplyLeading: false,
+        backgroundColor: Theme.of(context).appBarTheme.backgroundColor,
         title: Hero(
           tag: 'logo',
           child: Image.asset("assets/logo.png",
@@ -112,12 +113,12 @@ class TeacherHomeTab extends StatelessWidget {
           Container(
             margin: const EdgeInsets.only(right: 16),
             decoration: BoxDecoration(
-              color: const Color(0xFFF1F5F9),
+              color: Theme.of(context).cardColor,
               borderRadius: BorderRadius.circular(12),
             ),
             child: IconButton(
-                icon: const Icon(Icons.notifications_none_rounded,
-                    color: Color(0xFF475569)),
+                icon: Icon(Icons.notifications_none_rounded,
+                    color: Theme.of(context).iconTheme.color),
                 onPressed: () {}),
           ),
         ],
@@ -135,10 +136,10 @@ class TeacherHomeTab extends StatelessWidget {
                     children: [
                       Text(
                         'Hi, ${authProvider.userData?['name']?.split(' ')[0] ?? 'Teacher'} 👋',
-                        style: const TextStyle(
+                        style: TextStyle(
                             fontSize: 28,
                             fontWeight: FontWeight.w900,
-                            color: Color(0xFF1E293B),
+                            color: Theme.of(context).textTheme.bodyLarge?.color,
                             letterSpacing: -0.5),
                       ),
                       const Text('Ready to manage your scholars today?',
@@ -150,13 +151,14 @@ class TeacherHomeTab extends StatelessWidget {
                         padding: const EdgeInsets.symmetric(
                             horizontal: 12, vertical: 6),
                         decoration: BoxDecoration(
-                          color: const Color(0xFF1A56BE).withOpacity(0.1),
+                          color:
+                              Theme.of(context).primaryColor.withOpacity(0.1),
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Text(
                           'Department: ${authProvider.userData?['department'] ?? 'N/A'}',
-                          style: const TextStyle(
-                            color: Color(0xFF1A56BE),
+                          style: TextStyle(
+                            color: Theme.of(context).primaryColor,
                             fontSize: 12,
                             fontWeight: FontWeight.bold,
                           ),
@@ -167,14 +169,15 @@ class TeacherHomeTab extends StatelessWidget {
                 ),
                 CircleAvatar(
                   radius: 28,
-                  backgroundColor: const Color(0xFF1A56BE).withOpacity(0.1),
+                  backgroundColor:
+                      Theme.of(context).primaryColor.withOpacity(0.1),
                   backgroundImage:
                       authProvider.userData?['profileImage'] != null
                           ? NetworkImage(authProvider.userData!['profileImage'])
                           : null,
                   child: authProvider.userData?['profileImage'] == null
-                      ? const Icon(Icons.school_rounded,
-                          color: Color(0xFF1A56BE), size: 28)
+                      ? Icon(Icons.school_rounded,
+                          color: Theme.of(context).primaryColor, size: 28)
                       : null,
                 )
               ],
@@ -210,15 +213,19 @@ class TeacherHomeTab extends StatelessWidget {
                       width: double.infinity,
                       padding: const EdgeInsets.all(24),
                       decoration: BoxDecoration(
-                        gradient: const LinearGradient(
+                        gradient: LinearGradient(
                           begin: Alignment.topLeft,
                           end: Alignment.bottomRight,
-                          colors: [Color(0xFF1A56BE), Color(0xFF3B82F6)],
+                          colors: [
+                            Theme.of(context).primaryColor,
+                            Theme.of(context).primaryColor.withOpacity(0.8)
+                          ],
                         ),
                         borderRadius: BorderRadius.circular(24),
                         boxShadow: [
                           BoxShadow(
-                            color: const Color(0xFF1A56BE).withOpacity(0.3),
+                            color:
+                                Theme.of(context).primaryColor.withOpacity(0.3),
                             blurRadius: 20,
                             offset: const Offset(0, 10),
                           )
@@ -281,12 +288,13 @@ class TeacherHomeTab extends StatelessWidget {
                     Row(
                       children: [
                         _miniStatCard(
+                            context,
                             'Total Registrations',
                             totalStudents.toString(),
                             Icons.people_rounded,
                             const Color(0xFF6366F1)),
                         const SizedBox(width: 16),
-                        _miniStatCard('System Health', 'Optimal',
+                        _miniStatCard(context, 'System Health', 'Optimal',
                             Icons.bolt_rounded, const Color(0xFF10B981)),
                       ],
                     ),
@@ -295,12 +303,12 @@ class TeacherHomeTab extends StatelessWidget {
               },
             ),
             const SizedBox(height: 40),
-            const Text(
+            Text(
               "Management Suite",
               style: TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.w800,
-                  color: Color(0xFF1E293B),
+                  color: Theme.of(context).textTheme.bodyLarge?.color,
                   letterSpacing: -0.5),
             ),
             const SizedBox(height: 20),
@@ -327,7 +335,7 @@ class TeacherHomeTab extends StatelessWidget {
             _actionTile(
               context,
               "Academic Config",
-              "Set semester days & class rules",
+              "Set working hours & rules",
               Icons.settings_suggest_rounded,
               const Color(0xFF64748B),
               () => Navigator.push(
@@ -352,14 +360,15 @@ class TeacherHomeTab extends StatelessWidget {
     );
   }
 
-  Widget _miniStatCard(String label, String value, IconData icon, Color color) {
+  Widget _miniStatCard(BuildContext context, String label, String value,
+      IconData icon, Color color) {
     return Expanded(
       child: Container(
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: Theme.of(context).cardColor,
           borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: const Color(0xFFE2E8F0)),
+          border: Border.all(color: Theme.of(context).dividerColor),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -367,10 +376,10 @@ class TeacherHomeTab extends StatelessWidget {
             Icon(icon, color: color, size: 24),
             const SizedBox(height: 12),
             Text(value,
-                style: const TextStyle(
+                style: TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.w900,
-                    color: Color(0xFF1E293B))),
+                    color: Theme.of(context).textTheme.bodyLarge?.color)),
             Text(label,
                 style: const TextStyle(
                     fontSize: 11,
@@ -387,9 +396,9 @@ class TeacherHomeTab extends StatelessWidget {
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: const Color(0xFFE2E8F0)),
+        border: Border.all(color: Theme.of(context).dividerColor),
       ),
       child: InkWell(
         onTap: onTap,
@@ -413,10 +422,11 @@ class TeacherHomeTab extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(title,
-                        style: const TextStyle(
+                        style: TextStyle(
                             fontWeight: FontWeight.w800,
                             fontSize: 16,
-                            color: Color(0xFF1E293B))),
+                            color:
+                                Theme.of(context).textTheme.bodyLarge?.color)),
                     const SizedBox(height: 4),
                     Text(subtitle,
                         style: const TextStyle(
@@ -444,13 +454,15 @@ class TeacherStudentsTab extends StatelessWidget {
     final studentProvider = Provider.of<StudentProvider>(context);
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         title: const Text('Student Directory'),
+        backgroundColor: Theme.of(context).appBarTheme.backgroundColor,
+        foregroundColor: Theme.of(context).appBarTheme.iconTheme!.color,
         actions: [
           IconButton(
-              icon: const Icon(Icons.auto_awesome_rounded,
-                  color: Color(0xFF1A56BE)),
+              icon: Icon(Icons.auto_awesome_rounded,
+                  color: Theme.of(context).primaryColor),
               onPressed: () => Navigator.push(
                   context,
                   MaterialPageRoute(
@@ -472,19 +484,26 @@ class TeacherStudentsTab extends StatelessWidget {
             itemCount: students.length,
             itemBuilder: (context, index) {
               final student = students[index].data() as Map<String, dynamic>;
-              final String className = student['className'] ?? '';
+              // Removed className
               final String department = student['department'] ?? 'N/A';
               final String semester = student['semester'] ?? 'N/A';
-              final int totalDaysRequired = student['totalDaysRequired'] ?? 0;
+              final int totalWorkingHours = student['totalWorkingHours'] ?? 0;
               final attendance =
                   student['attendance'] as Map<String, dynamic>? ?? {};
 
               int present =
                   attendance.values.where((v) => v == 'Present').length;
 
-              // Use totalDaysRequired if available, otherwise use recorded days
-              double pct = totalDaysRequired > 0
-                  ? (present / totalDaysRequired) * 100
+              // Use totalWorkingHours if available
+              // Assuming each present is 1 hour for simplicity, or just calculate pct based on sessions if hours session mapping exists.
+              // But for attendance pct, usually it's Present Sessions / Total Sessions held.
+              // If totalWorkingHours is the target, then maybe Hours Completed / Total Hours.
+              // For now, keeping logic similar but replacing totalDaysRequired with totalWorkingHours if appropriate, or just sessions.
+              // Reverting to session based percentage for safely since "Working Hours" might be just a valid static field.
+
+              double pct = totalWorkingHours > 0
+                  ? (present / totalWorkingHours) *
+                      100 // Crude approximation if hours == sessions
                   : (attendance.length == 0
                       ? 0
                       : (present / attendance.length) * 100);
@@ -492,9 +511,9 @@ class TeacherStudentsTab extends StatelessWidget {
               return Container(
                 margin: const EdgeInsets.only(bottom: 12),
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: Theme.of(context).cardColor,
                   borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: const Color(0xFFE2E8F0)),
+                  border: Border.all(color: Theme.of(context).dividerColor),
                   boxShadow: [
                     BoxShadow(
                       color: Colors.black.withOpacity(0.02),
@@ -512,21 +531,23 @@ class TeacherStudentsTab extends StatelessWidget {
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
                         border: Border.all(
-                          color: const Color(0xFF1A56BE).withOpacity(0.3),
+                          color:
+                              Theme.of(context).primaryColor.withOpacity(0.3),
                           width: 2,
                         ),
                       ),
                       child: CircleAvatar(
                         radius: 28,
-                        backgroundColor: const Color(0xFFF1F5F9),
+                        backgroundColor:
+                            Theme.of(context).scaffoldBackgroundColor,
                         backgroundImage: student['profileImage'] != null
                             ? NetworkImage(student['profileImage'])
                             : null,
                         child: student['profileImage'] == null
                             ? Text(
                                 student['name']?[0]?.toUpperCase() ?? 'S',
-                                style: const TextStyle(
-                                  color: Color(0xFF1A56BE),
+                                style: TextStyle(
+                                  color: Theme.of(context).primaryColor,
                                   fontWeight: FontWeight.bold,
                                   fontSize: 20,
                                 ),
@@ -536,21 +557,21 @@ class TeacherStudentsTab extends StatelessWidget {
                     ),
                   ),
                   title: Text(student['name'] ?? 'Unknown',
-                      style: const TextStyle(
+                      style: TextStyle(
                           fontWeight: FontWeight.w800,
                           fontSize: 16,
-                          color: Color(0xFF1E293B))),
+                          color: Theme.of(context).textTheme.bodyLarge?.color)),
                   subtitle: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       const SizedBox(height: 4),
                       Row(
                         children: [
-                          Icon(Icons.school_rounded,
+                          Icon(Icons.business_rounded,
                               size: 12, color: Colors.grey[600]),
                           const SizedBox(width: 4),
                           Text(
-                            '$className • $department',
+                            '$department',
                             style: TextStyle(
                               fontSize: 12,
                               fontWeight: FontWeight.w600,
@@ -610,7 +631,7 @@ class TeacherStudentsTab extends StatelessWidget {
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => Navigator.push(context,
             MaterialPageRoute(builder: (context) => const AddStudent())),
-        backgroundColor: const Color(0xFF1A56BE),
+        backgroundColor: Theme.of(context).primaryColor,
         foregroundColor: Colors.white,
         elevation: 6,
         icon: const Icon(Icons.person_add_rounded),
@@ -673,17 +694,21 @@ class _TeacherProfileTabState extends State<TeacherProfileTab> {
     final String? profileImageUrl = userData?['profileImage'];
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
-      appBar: AppBar(title: const Text('Account Portfolio')),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      appBar: AppBar(
+        title: const Text('Account Portfolio'),
+        backgroundColor: Theme.of(context).appBarTheme.backgroundColor,
+        foregroundColor: Theme.of(context).appBarTheme.iconTheme!.color,
+      ),
       body: ListView(
         padding: const EdgeInsets.all(24),
         children: [
           Container(
             padding: const EdgeInsets.all(32),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: Theme.of(context).cardColor,
               borderRadius: BorderRadius.circular(24),
-              border: Border.all(color: const Color(0xFFE2E8F0)),
+              border: Border.all(color: Theme.of(context).dividerColor),
             ),
             child: Column(
               children: [
@@ -694,24 +719,25 @@ class _TeacherProfileTabState extends State<TeacherProfileTab> {
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
                         border: Border.all(
-                            color: const Color(0xFF1A56BE), width: 2),
+                            color: Theme.of(context).primaryColor, width: 2),
                       ),
                       child: CircleAvatar(
                         radius: 50,
-                        backgroundColor: const Color(0xFFF1F5F9),
+                        backgroundColor:
+                            Theme.of(context).primaryColor.withOpacity(0.1),
                         backgroundImage: profileImageUrl != null
                             ? NetworkImage(profileImageUrl)
                             : null,
                         child: profileImageUrl == null
-                            ? const Icon(Icons.school_rounded,
-                                size: 40, color: Color(0xFF1A56BE))
+                            ? Icon(Icons.school_rounded,
+                                size: 40, color: Theme.of(context).primaryColor)
                             : null,
                       ),
                     ),
                     if (_isUploading)
-                      const Positioned.fill(
+                      Positioned.fill(
                         child: CircularProgressIndicator(
-                          color: Color(0xFF1A56BE),
+                          color: Theme.of(context).primaryColor,
                           strokeWidth: 3,
                         ),
                       ),
@@ -719,8 +745,8 @@ class _TeacherProfileTabState extends State<TeacherProfileTab> {
                       onTap: _isUploading ? null : _pickAndUploadImage,
                       child: Container(
                         padding: const EdgeInsets.all(8),
-                        decoration: const BoxDecoration(
-                          color: Color(0xFF1A56BE),
+                        decoration: BoxDecoration(
+                          color: Theme.of(context).primaryColor,
                           shape: BoxShape.circle,
                         ),
                         child: const Icon(Icons.camera_alt_rounded,
@@ -731,10 +757,10 @@ class _TeacherProfileTabState extends State<TeacherProfileTab> {
                 ),
                 const SizedBox(height: 20),
                 Text(userData?['name'] ?? 'Teacher',
-                    style: const TextStyle(
+                    style: TextStyle(
                         fontSize: 22,
                         fontWeight: FontWeight.w900,
-                        color: Color(0xFF1E293B))),
+                        color: Theme.of(context).textTheme.bodyLarge?.color)),
                 const SizedBox(height: 4),
                 Text(userData?['email'] ?? 'N/A',
                     style: const TextStyle(
@@ -744,12 +770,12 @@ class _TeacherProfileTabState extends State<TeacherProfileTab> {
                   padding:
                       const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFF1F5F9),
+                    color: Theme.of(context).primaryColor.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(100),
                   ),
-                  child: const Text("Verified Educator",
+                  child: Text("Verified Educator",
                       style: TextStyle(
-                          color: Color(0xFF1A56BE),
+                          color: Theme.of(context).primaryColor,
                           fontSize: 11,
                           fontWeight: FontWeight.bold)),
                 )
@@ -757,24 +783,43 @@ class _TeacherProfileTabState extends State<TeacherProfileTab> {
             ),
           ),
           const SizedBox(height: 32),
-          _profileItem(Icons.security_rounded, "Account Security",
-              "Manage your credentials"),
           _profileItem(
-              Icons.color_lens_rounded, "Appearance", "Custom dashbord theme"),
-          _profileItem(Icons.help_center_rounded, "Support Center",
-              "Contact EduPresence team"),
+              context,
+              Icons.security_rounded,
+              "Account Security",
+              "Manage your credentials",
+              () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const ChangePasswordScreen(),
+                    ),
+                  )),
+          _profileItem(
+              context,
+              Icons.color_lens_rounded,
+              "Appearance",
+              "Custom dashboard theme",
+              () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const AppearanceScreen(),
+                    ),
+                  )),
+          _profileItem(context, Icons.help_center_rounded, "Support Center",
+              "Contact EduPresence team", () {}),
           // Department info
           Container(
             margin: const EdgeInsets.only(top: 12),
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: Theme.of(context).cardColor,
               borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: const Color(0xFFE2E8F0)),
+              border: Border.all(color: Theme.of(context).dividerColor),
             ),
             child: Row(
               children: [
-                const Icon(Icons.business_rounded, color: Color(0xFF1A56BE)),
+                Icon(Icons.business_rounded,
+                    color: Theme.of(context).primaryColor),
                 const SizedBox(width: 12),
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -788,10 +833,10 @@ class _TeacherProfileTabState extends State<TeacherProfileTab> {
                     ),
                     Text(
                       userData?['department'] ?? 'Not Set',
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
-                        color: Color(0xFF1E293B),
+                        color: Theme.of(context).textTheme.bodyLarge?.color,
                       ),
                     ),
                   ],
@@ -804,18 +849,17 @@ class _TeacherProfileTabState extends State<TeacherProfileTab> {
             width: double.infinity,
             child: ElevatedButton.icon(
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.red[50],
-                foregroundColor: Colors.redAccent,
-                elevation: 0,
-                side: BorderSide(color: Colors.redAccent.withOpacity(0.1)),
-                padding: const EdgeInsets.symmetric(vertical: 16),
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16)),
-              ),
+                  backgroundColor: Theme.of(context).cardColor,
+                  foregroundColor: const Color(0xFFEF4444),
+                  elevation: 0,
+                  side: const BorderSide(color: Color(0xFFFEE2E2)),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16)),
+                  padding: const EdgeInsets.all(16)),
               onPressed: () => authProvider.logout(),
-              icon: const Icon(Icons.logout_rounded),
-              label: const Text('SIGN OUT ACCOUNT',
-                  style: TextStyle(fontWeight: FontWeight.bold)),
+              icon: const Icon(Icons.power_settings_new_rounded),
+              label: const Text('LOGOUT SESSION',
+                  style: TextStyle(fontWeight: FontWeight.w700)),
             ),
           ),
           const SizedBox(height: 100),
@@ -824,42 +868,38 @@ class _TeacherProfileTabState extends State<TeacherProfileTab> {
     );
   }
 
-  Widget _profileItem(IconData icon, String title, String sub) {
+  Widget _profileItem(BuildContext context, IconData icon, String title,
+      String subtitle, VoidCallback onTap) {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFE2E8F0)),
+        border: Border.all(color: Theme.of(context).dividerColor),
       ),
       child: ListTile(
-        leading: Icon(icon, color: const Color(0xFF64748B)),
+        onTap: onTap,
+        contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+        leading: Container(
+          padding: const EdgeInsets.all(10),
+          decoration: BoxDecoration(
+            color: Theme.of(context).primaryColor.withOpacity(0.1),
+            shape: BoxShape.circle,
+          ),
+          child: Icon(icon, color: Theme.of(context).primaryColor, size: 20),
+        ),
         title: Text(title,
-            style: const TextStyle(
+            style: TextStyle(
                 fontWeight: FontWeight.w700,
                 fontSize: 15,
-                color: Color(0xFF1E293B))),
-        subtitle: Text(sub,
-            style: const TextStyle(fontSize: 12, color: Color(0xFF94A3B8))),
+                color: Theme.of(context).textTheme.bodyLarge?.color)),
+        subtitle: Text(subtitle,
+            style: const TextStyle(
+                fontSize: 12,
+                color: Color(0xFF64748B),
+                fontWeight: FontWeight.w500)),
         trailing: const Icon(Icons.arrow_forward_ios_rounded,
-            size: 14, color: Color(0xFFCBD5E1)),
-        onTap: () {
-          if (title == "Account Security") {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => const ChangePasswordScreen(),
-              ),
-            );
-          } else if (title == "Appearance") {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => const AppearanceScreen(),
-              ),
-            );
-          }
-        },
+            size: 16, color: Color(0xFF94A3B8)),
       ),
     );
   }

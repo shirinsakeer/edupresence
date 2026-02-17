@@ -15,11 +15,10 @@ class StudentProvider with ChangeNotifier {
   Future<String?> addStudent({
     required String name,
     required String email,
-    required String className,
     required String rollNumber,
     required String department,
     required String semester,
-    required int totalDaysRequired,
+    required int totalWorkingHours,
   }) async {
     _isLoading = true;
     notifyListeners();
@@ -59,11 +58,10 @@ class StudentProvider with ChangeNotifier {
       await _firestore.collection('students').doc(studentId).set({
         'name': name,
         'email': email,
-        'className': className,
         'rollNumber': rollNumber,
         'department': department,
         'semester': semester,
-        'totalDaysRequired': totalDaysRequired,
+        'totalWorkingHours': totalWorkingHours,
         'role': 'student',
         'createdAt': FieldValue.serverTimestamp(),
         'attendance': {},
@@ -126,13 +124,6 @@ class StudentProvider with ChangeNotifier {
     }
   }
 
-  Stream<QuerySnapshot> getStudentsByClass(String className) {
-    return _firestore
-        .collection('students')
-        .where('className', isEqualTo: className)
-        .snapshots();
-  }
-
   Stream<QuerySnapshot> getStudentsByDepartment(String department) {
     return _firestore
         .collection('students')
@@ -153,18 +144,6 @@ class StudentProvider with ChangeNotifier {
     return _firestore.collection('students').snapshots();
   }
 
-  Stream<List<String>> getAllClasses() {
-    return _firestore.collection('students').snapshots().map((snapshot) {
-      final classes = snapshot.docs
-          .map((doc) => doc.data()['className'])
-          .whereType<String>()
-          .toSet()
-          .toList();
-      classes.sort();
-      return classes;
-    });
-  }
-
   Future<void> markAttendance({
     required String studentId,
     required String date,
@@ -175,11 +154,10 @@ class StudentProvider with ChangeNotifier {
     });
   }
 
-  // Set total days for a class
-  Future<void> setTotalDays(String className, int totalDays) async {
-    await _firestore.collection('classes').doc(className).set({
-      'totalDays': totalDays,
-    }, SetOptions(merge: true));
+  Future<void> updateStudentWorkingHours(String studentId, int hours) async {
+    await _firestore.collection('students').doc(studentId).update({
+      'totalWorkingHours': hours,
+    });
     notifyListeners();
   }
 

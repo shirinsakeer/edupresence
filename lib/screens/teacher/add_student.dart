@@ -161,26 +161,11 @@ class _AddStudentState extends State<AddStudent> {
                       : null,
                 ),
                 const SizedBox(height: 20),
-                Row(
-                  children: [
-                    Expanded(
-                      child: _buildField(
-                        controller: classController,
-                        label: "Class/Subject",
-                        icon: Icons.school_outlined,
-                        validator: (v) => v!.isEmpty ? 'Enter class' : null,
-                      ),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: _buildField(
-                        controller: rollController,
-                        label: "Roll Number/ID",
-                        icon: Icons.numbers_rounded,
-                        validator: (v) => v!.isEmpty ? 'Enter ID' : null,
-                      ),
-                    ),
-                  ],
+                _buildField(
+                  controller: rollController,
+                  label: "Roll Number/ID",
+                  icon: Icons.numbers_rounded,
+                  validator: (v) => v!.isEmpty ? 'Enter ID' : null,
                 ),
                 const SizedBox(height: 20),
                 // Department Dropdown
@@ -259,8 +244,8 @@ class _AddStudentState extends State<AddStudent> {
                 const SizedBox(height: 20),
                 _buildField(
                   controller: totalDaysController,
-                  label: "Total Days Required",
-                  icon: Icons.event_available_rounded,
+                  label: "Total Working Hours", // Changed label
+                  icon: Icons.access_time_rounded,
                   keyboardType: TextInputType.number,
                   validator: (v) => v!.isEmpty || int.tryParse(v) == null
                       ? 'Enter valid number'
@@ -287,11 +272,10 @@ class _AddStudentState extends State<AddStudent> {
                               String? error = await studentProvider.addStudent(
                                 name: nameController.text.trim(),
                                 email: email,
-                                className: classController.text.trim(),
                                 rollNumber: roll,
                                 department: _selectedDepartment!,
                                 semester: _selectedSemester!,
-                                totalDaysRequired:
+                                totalWorkingHours:
                                     int.parse(totalDaysController.text.trim()),
                               );
                               if (error != null && mounted) {

@@ -1,4 +1,3 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:edupresence/providers/student_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -12,13 +11,13 @@ class ManageClasses extends StatefulWidget {
 }
 
 class _ManageClassesState extends State<ManageClasses> {
-  final TextEditingController _classController = TextEditingController();
   final TextEditingController _daysController = TextEditingController();
   bool _isLoading = false;
+  String? _selectedDepartment;
+  String? _selectedSemester;
 
   @override
   void dispose() {
-    _classController.dispose();
     _daysController.dispose();
     super.dispose();
   }
@@ -28,7 +27,7 @@ class _ManageClassesState extends State<ManageClasses> {
     final studentProvider = Provider.of<StudentProvider>(context);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Manage Classes')),
+      appBar: AppBar(title: const Text('Manage Academic Hours')),
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(32),
@@ -46,7 +45,7 @@ class _ManageClassesState extends State<ManageClasses> {
               ),
               const SizedBox(height: 8),
               const Text(
-                "Set total session count for attendance tracking.",
+                "Set total working hours for a Department and Semester.",
                 style: TextStyle(
                   color: Color(0xFF64748B),
                   fontSize: 15,
@@ -54,35 +53,58 @@ class _ManageClassesState extends State<ManageClasses> {
                 ),
               ),
               const SizedBox(height: 32),
-              _buildField(
-                controller: _classController,
-                label: "Class Name",
-                icon: Icons.school_outlined,
-                hint: "e.g., Computer Science 101",
-                onChanged: (v) {
-                  if (v.isNotEmpty) {
-                    FirebaseFirestore.instance
-                        .collection('classes')
-                        .doc(v.trim())
-                        .get()
-                        .then((doc) {
-                      if (doc.exists &&
-                          _classController.text.trim() == v.trim() &&
-                          mounted) {
-                        setState(() {
-                          _daysController.text =
-                              (doc.data()?['totalDays'] ?? '').toString();
-                        });
-                      }
-                    });
-                  }
-                },
+              DropdownButtonFormField<String>(
+                value: _selectedDepartment,
+                decoration: const InputDecoration(
+                  labelText: "Department",
+                  prefixIcon:
+                      Icon(Icons.business_rounded, color: Color(0xFF475569)),
+                ),
+                items: [
+                  'Computer Science',
+                  'Information Technology',
+                  'Electronics',
+                  'Mechanical',
+                  'Civil',
+                  'Electrical',
+                  'Mathematics',
+                  'Physics',
+                  'Chemistry',
+                  'Other',
+                ]
+                    .map((dept) =>
+                        DropdownMenuItem(value: dept, child: Text(dept)))
+                    .toList(),
+                onChanged: (v) => setState(() => _selectedDepartment = v),
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: 20),
+              DropdownButtonFormField<String>(
+                value: _selectedSemester,
+                decoration: const InputDecoration(
+                  labelText: "Semester",
+                  prefixIcon: Icon(Icons.calendar_month_outlined,
+                      color: Color(0xFF475569)),
+                ),
+                items: [
+                  'Semester 1',
+                  'Semester 2',
+                  'Semester 3',
+                  'Semester 4',
+                  'Semester 5',
+                  'Semester 6',
+                  'Semester 7',
+                  'Semester 8',
+                ]
+                    .map(
+                        (sem) => DropdownMenuItem(value: sem, child: Text(sem)))
+                    .toList(),
+                onChanged: (v) => setState(() => _selectedSemester = v),
+              ),
+              const SizedBox(height: 20),
               _buildField(
                 controller: _daysController,
-                label: "Total Working Days",
-                icon: Icons.calendar_month_rounded,
+                label: "Total Working Hours", // Changed label
+                icon: Icons.access_time_rounded,
                 keyboardType: TextInputType.number,
               ),
               const SizedBox(height: 32),
@@ -93,31 +115,55 @@ class _ManageClassesState extends State<ManageClasses> {
                   onPressed: _isLoading
                       ? null
                       : () async {
-                          final className = _classController.text.trim();
-                          final daysText = _daysController.text.trim();
-
-                          if (className.isEmpty || daysText.isEmpty) {
+                          if (_selectedDepartment == null ||
+                              _selectedSemester == null ||
+                              _daysController.text.trim().isEmpty) {
                             SnackbarUtils.showError(
                                 context, "Please fill all fields");
                             return;
                           }
 
-                          int? days = int.tryParse(daysText);
-                          if (days == null || days <= 0) {
+                          int? hours =
+                              int.tryParse(_daysController.text.trim());
+                          if (hours == null || hours <= 0) {
                             SnackbarUtils.showError(
                                 context, "Please enter a valid number");
                             return;
                           }
 
                           setState(() => _isLoading = true);
-                          await studentProvider.setTotalDays(className, days);
-                          if (mounted) setState(() => _isLoading = false);
+                          try {
+                            // Fetch students
+                            var snapshot = await studentProvider
+                                .getStudentsByDepartmentAndSemester(
+                                    _selectedDepartment!, _selectedSemester!)
+                                .first;
 
-                          if (mounted) {
-                            SnackbarUtils.showSuccess(
-                                context, "Total days updated successfully");
-                            _classController.clear();
-                            _daysController.clear();
+                            if (snapshot.docs.isEmpty) {
+                              if (mounted) {
+                                SnackbarUtils.showError(context,
+                                    "No students found for this selection");
+                              }
+                            } else {
+                              // Update all students
+                              // Note: This is a batch operation on client side, ideal would be a cloud function but this works for valid number of students
+                              for (var doc in snapshot.docs) {
+                                await studentProvider.updateStudentWorkingHours(
+                                    doc.id, hours);
+                              }
+                              if (mounted) {
+                                SnackbarUtils.showSuccess(context,
+                                    "Updated working hours for ${snapshot.docs.length} students");
+                                _daysController.clear();
+                              }
+                            }
+                          } catch (e) {
+                            if (mounted) {
+                              SnackbarUtils.showError(
+                                  context, "Error updating: $e");
+                            }
+                          } finally {
+                            if (mounted) setState(() => _isLoading = false);
                           }
                         },
                   style: ElevatedButton.styleFrom(
@@ -133,80 +179,10 @@ class _ManageClassesState extends State<ManageClasses> {
                           width: 24,
                           child: CircularProgressIndicator(
                               color: Colors.white, strokeWidth: 3))
-                      : const Text("UPDATE ACADEMIC DAYS",
+                      : const Text("UPDATE STUDENTS",
                           style: TextStyle(
                               fontWeight: FontWeight.bold, fontSize: 16)),
                 ),
-              ),
-              const SizedBox(height: 48),
-              const Text(
-                "Existing Configurations",
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFF1E293B),
-                ),
-              ),
-              const SizedBox(height: 16),
-              StreamBuilder<QuerySnapshot>(
-                stream: FirebaseFirestore.instance
-                    .collection('classes')
-                    .snapshots(),
-                builder: (context, snapshot) {
-                  if (snapshot.connectionState == ConnectionState.waiting) {
-                    return const Center(child: CircularProgressIndicator());
-                  }
-                  if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-                    return const Text("No class configurations yet.",
-                        style: TextStyle(color: Color(0xFF64748B)));
-                  }
-                  return ListView.builder(
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    itemCount: snapshot.data!.docs.length,
-                    itemBuilder: (context, index) {
-                      final doc = snapshot.data!.docs[index];
-                      final data = doc.data() as Map<String, dynamic>;
-                      return Container(
-                        margin: const EdgeInsets.only(bottom: 12),
-                        padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFF8FAFC),
-                          borderRadius: BorderRadius.circular(16),
-                          border: Border.all(color: const Color(0xFFE2E8F0)),
-                        ),
-                        child: Row(
-                          children: [
-                            const Icon(Icons.school_rounded,
-                                color: Color(0xFF1A56BE)),
-                            const SizedBox(width: 16),
-                            Expanded(
-                              child: Text(
-                                doc.id,
-                                style: const TextStyle(
-                                    fontWeight: FontWeight.bold, fontSize: 16),
-                              ),
-                            ),
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 12, vertical: 6),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFF1A56BE).withOpacity(0.1),
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              child: Text(
-                                "${data['totalDays']} Days",
-                                style: const TextStyle(
-                                    color: Color(0xFF1A56BE),
-                                    fontWeight: FontWeight.bold),
-                              ),
-                            ),
-                          ],
-                        ),
-                      );
-                    },
-                  );
-                },
               ),
             ],
           ),

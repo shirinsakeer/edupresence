@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:edupresence/providers/auth_provider.dart';
 
 class ThemeProvider with ChangeNotifier {
   ThemeMode _themeMode = ThemeMode.light;
@@ -34,13 +33,15 @@ class AppearanceScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         title: const Text('Appearance'),
-        backgroundColor: Colors.white,
+        backgroundColor: Theme.of(context).appBarTheme.backgroundColor,
         elevation: 0,
-        foregroundColor: const Color(0xFF1E293B),
+        foregroundColor: Theme.of(context).appBarTheme.iconTheme!.color,
       ),
       body: ListView(
         padding: const EdgeInsets.all(24),
@@ -48,15 +49,18 @@ class AppearanceScreen extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
-              gradient: const LinearGradient(
+              gradient: LinearGradient(
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
-                colors: [Color(0xFF1A56BE), Color(0xFF3B82F6)],
+                colors: [
+                  Theme.of(context).primaryColor,
+                  Theme.of(context).primaryColor.withOpacity(0.8)
+                ],
               ),
               borderRadius: BorderRadius.circular(20),
               boxShadow: [
                 BoxShadow(
-                  color: const Color(0xFF1A56BE).withOpacity(0.2),
+                  color: Theme.of(context).primaryColor.withOpacity(0.2),
                   blurRadius: 15,
                   offset: const Offset(0, 5),
                 ),
@@ -104,12 +108,12 @@ class AppearanceScreen extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 32),
-          const Text(
+          Text(
             "THEME SETTINGS",
             style: TextStyle(
               fontSize: 12,
               fontWeight: FontWeight.bold,
-              color: Color(0xFF64748B),
+              color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
               letterSpacing: 1,
             ),
           ),
