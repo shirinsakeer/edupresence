@@ -473,58 +473,135 @@ class TeacherStudentsTab extends StatelessWidget {
             itemBuilder: (context, index) {
               final student = students[index].data() as Map<String, dynamic>;
               final String className = student['className'] ?? '';
+              final String department = student['department'] ?? 'N/A';
+              final String semester = student['semester'] ?? 'N/A';
+              final int totalDaysRequired = student['totalDaysRequired'] ?? 0;
               final attendance =
                   student['attendance'] as Map<String, dynamic>? ?? {};
 
-              return StreamBuilder<DocumentSnapshot>(
-                stream: studentProvider.getClassMetadata(className),
-                builder: (context, classSnapshot) {
-                  int totalDays = attendance.length;
-                  if (classSnapshot.hasData && classSnapshot.data!.exists) {
-                    totalDays = (classSnapshot.data!.data()
-                            as Map<String, dynamic>)['totalDays'] ??
-                        attendance.length;
-                  }
-                  int present =
-                      attendance.values.where((v) => v == 'Present').length;
-                  double pct = totalDays == 0 ? 0 : (present / totalDays) * 100;
+              int present =
+                  attendance.values.where((v) => v == 'Present').length;
 
-                  return Container(
-                    margin: const EdgeInsets.only(bottom: 12),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: const Color(0xFFE2E8F0)),
+              // Use totalDaysRequired if available, otherwise use recorded days
+              double pct = totalDaysRequired > 0
+                  ? (present / totalDaysRequired) * 100
+                  : (attendance.length == 0
+                      ? 0
+                      : (present / attendance.length) * 100);
+
+              return Container(
+                margin: const EdgeInsets.only(bottom: 12),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: const Color(0xFFE2E8F0)),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.02),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
                     ),
-                    child: ListTile(
-                      contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 16, vertical: 8),
-                      leading: CircleAvatar(
-                        radius: 24,
+                  ],
+                ),
+                child: ListTile(
+                  contentPadding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  leading: Hero(
+                    tag: 'student_${students[index].id}',
+                    child: Container(
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: const Color(0xFF1A56BE).withOpacity(0.3),
+                          width: 2,
+                        ),
+                      ),
+                      child: CircleAvatar(
+                        radius: 28,
                         backgroundColor: const Color(0xFFF1F5F9),
                         backgroundImage: student['profileImage'] != null
                             ? NetworkImage(student['profileImage'])
                             : null,
                         child: student['profileImage'] == null
-                            ? Text(student['name']?[0] ?? 'S',
+                            ? Text(
+                                student['name']?[0]?.toUpperCase() ?? 'S',
                                 style: const TextStyle(
-                                    color: Color(0xFF1A56BE),
-                                    fontWeight: FontWeight.bold))
+                                  color: Color(0xFF1A56BE),
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 20,
+                                ),
+                              )
                             : null,
                       ),
-                      title: Text(student['name'] ?? 'Unknown',
-                          style: const TextStyle(
-                              fontWeight: FontWeight.w800,
-                              color: Color(0xFF1E293B))),
-                      subtitle: Text(
-                          '$className • Attendance: ${pct.toStringAsFixed(0)}%',
-                          style: const TextStyle(
-                              fontSize: 12, fontWeight: FontWeight.w500)),
-                      trailing: const Icon(Icons.chevron_right_rounded,
-                          color: Color(0xFF94A3B8)),
                     ),
-                  );
-                },
+                  ),
+                  title: Text(student['name'] ?? 'Unknown',
+                      style: const TextStyle(
+                          fontWeight: FontWeight.w800,
+                          fontSize: 16,
+                          color: Color(0xFF1E293B))),
+                  subtitle: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const SizedBox(height: 4),
+                      Row(
+                        children: [
+                          Icon(Icons.school_rounded,
+                              size: 12, color: Colors.grey[600]),
+                          const SizedBox(width: 4),
+                          Text(
+                            '$className • $department',
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.grey[700],
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 2),
+                      Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 8, vertical: 2),
+                            decoration: BoxDecoration(
+                              color: pct >= 75
+                                  ? Colors.green.withOpacity(0.1)
+                                  : (pct >= 50
+                                      ? Colors.orange.withOpacity(0.1)
+                                      : Colors.red.withOpacity(0.1)),
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                            child: Text(
+                              '${pct.toStringAsFixed(1)}% Attendance',
+                              style: TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.bold,
+                                color: pct >= 75
+                                    ? Colors.green[700]
+                                    : (pct >= 50
+                                        ? Colors.orange[700]
+                                        : Colors.red[700]),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            '$semester',
+                            style: TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.grey[600],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                  trailing: const Icon(Icons.chevron_right_rounded,
+                      color: Color(0xFF94A3B8)),
+                ),
               );
             },
           );

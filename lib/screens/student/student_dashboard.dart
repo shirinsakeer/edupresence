@@ -1,6 +1,4 @@
 import 'package:edupresence/providers/auth_provider.dart';
-import 'package:edupresence/providers/auth_provider.dart';
-import 'package:edupresence/providers/student_provider.dart';
 import 'package:edupresence/screens/student/chatbot.dart';
 import 'package:edupresence/services/cloudinary_service.dart';
 import 'package:edupresence/screens/student/edit_profile.dart';
@@ -493,12 +491,68 @@ class _StudentProfileTabState extends State<StudentProfileTab> {
                           Icons.badge_rounded),
                     ],
                   ),
+                  const SizedBox(height: 16),
+                  Row(
+                    children: [
+                      _idBadge("DEPARTMENT", userData?['department'] ?? 'N/A',
+                          Icons.business_rounded),
+                      const SizedBox(width: 16),
+                      _idBadge("SEMESTER", userData?['semester'] ?? 'N/A',
+                          Icons.calendar_today_rounded),
+                    ],
+                  ),
                 ],
               ),
             ),
             const SizedBox(height: 40),
-            _actionButton(Icons.edit_note_rounded, "Request Data Correction"),
-            _actionButton(Icons.download_rounded, "Download Attendance Report"),
+            _profileItem(
+              context,
+              Icons.edit_rounded,
+              "Edit Profile",
+              "Update your name",
+              () => Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const EditStudentProfileScreen(),
+                ),
+              ),
+            ),
+            _profileItem(
+              context,
+              Icons.lock_outline_rounded,
+              "Change Password",
+              "Update your password",
+              () => Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const ChangePasswordScreen(),
+                ),
+              ),
+            ),
+            _profileItem(
+              context,
+              Icons.color_lens_outlined,
+              "Appearance",
+              "Theme preferences",
+              () => Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const AppearanceScreen(),
+                ),
+              ),
+            ),
+            _profileItem(
+              context,
+              Icons.assignment_outlined,
+              "Download Report",
+              "Get attendance PDF",
+              () {
+                SnackbarUtils.showSuccess(
+                  context,
+                  "Report generation coming soon!",
+                );
+              },
+            ),
             const SizedBox(height: 40),
             SizedBox(
               width: double.infinity,
@@ -550,22 +604,53 @@ class _StudentProfileTabState extends State<StudentProfileTab> {
     );
   }
 
-  Widget _actionButton(IconData icon, String label) {
+  Widget _profileItem(BuildContext context, IconData icon, String title,
+      String subtitle, VoidCallback onTap) {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
-      width: double.infinity,
-      child: OutlinedButton.icon(
-        style: OutlinedButton.styleFrom(
-          padding: const EdgeInsets.all(18),
-          side: const BorderSide(color: Color(0xFFE2E8F0)),
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-          alignment: Alignment.centerLeft,
-          foregroundColor: const Color(0xFF475569),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.02),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: ListTile(
+        contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+        leading: Container(
+          padding: const EdgeInsets.all(10),
+          decoration: BoxDecoration(
+            color: const Color(0xFF1A56BE).withOpacity(0.1),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Icon(icon, color: const Color(0xFF1A56BE), size: 24),
         ),
-        onPressed: () {},
-        icon: Icon(icon, size: 20),
-        label: Text(label, style: const TextStyle(fontWeight: FontWeight.w600)),
+        title: Text(
+          title,
+          style: const TextStyle(
+            fontWeight: FontWeight.w700,
+            fontSize: 16,
+            color: Color(0xFF1E293B),
+          ),
+        ),
+        subtitle: Text(
+          subtitle,
+          style: const TextStyle(
+            color: Color(0xFF64748B),
+            fontSize: 13,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+        trailing: const Icon(
+          Icons.chevron_right_rounded,
+          color: Color(0xFF94A3B8),
+        ),
+        onTap: onTap,
       ),
     );
   }
