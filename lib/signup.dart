@@ -1,6 +1,7 @@
 import 'package:edupresence/providers/auth_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:edupresence/widgets/snackbar_utils.dart';
 
 class Signup extends StatefulWidget {
   const Signup({super.key});
@@ -166,22 +167,10 @@ class _SignupState extends State<Signup> {
                                   if (mounted)
                                     setState(() => _isLoading = false);
                                   if (error != null && mounted) {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(
-                                        content: Text(error),
-                                        backgroundColor: Colors.redAccent,
-                                        behavior: SnackBarBehavior.floating,
-                                      ),
-                                    );
+                                    SnackbarUtils.showError(context, error);
                                   } else if (mounted) {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      const SnackBar(
-                                        content:
-                                            Text("Welcome to EduPresence!"),
-                                        backgroundColor: Colors.green,
-                                        behavior: SnackBarBehavior.floating,
-                                      ),
-                                    );
+                                    SnackbarUtils.showSuccess(
+                                        context, "Welcome to EduPresence!");
                                     Navigator.of(context).pop();
                                   }
                                 }

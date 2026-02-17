@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:edupresence/providers/student_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:edupresence/widgets/snackbar_utils.dart';
 
 class ManageClasses extends StatefulWidget {
   const ManageClasses({super.key});
@@ -96,18 +97,15 @@ class _ManageClassesState extends State<ManageClasses> {
                           final daysText = _daysController.text.trim();
 
                           if (className.isEmpty || daysText.isEmpty) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                    content: Text("Please fill all fields")));
+                            SnackbarUtils.showError(
+                                context, "Please fill all fields");
                             return;
                           }
 
                           int? days = int.tryParse(daysText);
                           if (days == null || days <= 0) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                    content:
-                                        Text("Please enter a valid number")));
+                            SnackbarUtils.showError(
+                                context, "Please enter a valid number");
                             return;
                           }
 
@@ -116,12 +114,8 @@ class _ManageClassesState extends State<ManageClasses> {
                           if (mounted) setState(() => _isLoading = false);
 
                           if (mounted) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                    content:
-                                        Text("Total days updated successfully"),
-                                    backgroundColor: Colors.green,
-                                    behavior: SnackBarBehavior.floating));
+                            SnackbarUtils.showSuccess(
+                                context, "Total days updated successfully");
                             _classController.clear();
                             _daysController.clear();
                           }

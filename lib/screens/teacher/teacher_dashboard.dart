@@ -11,6 +11,7 @@ import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
+import 'package:edupresence/widgets/snackbar_utils.dart';
 
 class TeacherDashboard extends StatefulWidget {
   const TeacherDashboard({super.key});
@@ -550,29 +551,19 @@ class _TeacherProfileTabState extends State<TeacherProfileTab> {
         if (imageUrl != null) {
           final error = await authProvider.updateProfileImage(imageUrl);
           if (error != null && mounted) {
-            _showSnackBar(error, Colors.redAccent);
+            SnackbarUtils.showError(context, error);
           } else if (mounted) {
-            _showSnackBar("Profile updated successfully!", Colors.green);
+            SnackbarUtils.showSuccess(context, "Profile updated successfully!");
           }
         } else if (mounted) {
-          _showSnackBar("Failed to upload image.", Colors.redAccent);
+          SnackbarUtils.showError(context, "Failed to upload image.");
         }
       }
     } catch (e) {
-      if (mounted) _showSnackBar("Error: $e", Colors.redAccent);
+      if (mounted) SnackbarUtils.showError(context, "Error: $e");
     } finally {
       if (mounted) setState(() => _isUploading = false);
     }
-  }
-
-  void _showSnackBar(String message, Color color) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: color,
-        behavior: SnackBarBehavior.floating,
-      ),
-    );
   }
 
   @override

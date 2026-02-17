@@ -86,6 +86,14 @@ class StudentProvider with ChangeNotifier {
     const templateId = 'template_student_creds';
     const userId = 'YOUR_USER_ID';
 
+    if (userId == 'YOUR_USER_ID') {
+      debugPrint('WARNING: EmailJS not configured. Skipping email sending.');
+      debugPrint('Mock Email to: $email');
+      debugPrint(
+          'Message: Your login credentials for EduPresence are:\nEmail: $email\nPassword: $password');
+      return;
+    }
+
     final url = Uri.parse('https://api.emailjs.com/api/v1.0/email/send');
     try {
       final response = await http.post(
@@ -106,9 +114,9 @@ class StudentProvider with ChangeNotifier {
           },
         }),
       );
-      print('Email response: ${response.statusCode} ${response.body}');
+      debugPrint('Email response: ${response.statusCode} ${response.body}');
     } catch (e) {
-      print('Failed to send email: $e');
+      debugPrint('Failed to send email: $e');
     }
   }
 

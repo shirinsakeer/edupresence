@@ -1,6 +1,7 @@
 import 'package:edupresence/providers/student_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:edupresence/widgets/snackbar_utils.dart';
 
 class AddStudent extends StatefulWidget {
   const AddStudent({super.key});
@@ -179,8 +180,7 @@ class _AddStudentState extends State<AddStudent> {
                                 rollNumber: roll,
                               );
                               if (error != null && mounted) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(content: Text(error)));
+                                SnackbarUtils.showError(context, error);
                               } else if (mounted) {
                                 _showSuccessDialog(email, "Std${roll}123");
                               }

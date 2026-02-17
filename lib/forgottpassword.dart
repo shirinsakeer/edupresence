@@ -1,6 +1,7 @@
 import 'package:edupresence/providers/auth_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:edupresence/widgets/snackbar_utils.dart';
 
 class Forgottpassword extends StatefulWidget {
   const Forgottpassword({super.key});
@@ -135,22 +136,10 @@ class _ForgottpasswordState extends State<Forgottpassword> {
                                   .resetPassword(emailcontroller.text.trim());
                               if (mounted) setState(() => _isLoading = false);
                               if (error != null && mounted) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: Text(error),
-                                    backgroundColor: Colors.redAccent,
-                                    behavior: SnackBarBehavior.floating,
-                                  ),
-                                );
+                                SnackbarUtils.showError(context, error);
                               } else if (mounted) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
-                                    content:
-                                        Text("Reset link sent to your email!"),
-                                    backgroundColor: Colors.green,
-                                    behavior: SnackBarBehavior.floating,
-                                  ),
-                                );
+                                SnackbarUtils.showSuccess(
+                                    context, "Reset link sent to your email!");
                                 Navigator.pop(context);
                               }
                             }

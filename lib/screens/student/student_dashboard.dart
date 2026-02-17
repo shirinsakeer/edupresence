@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import 'package:provider/provider.dart';
+import 'package:edupresence/widgets/snackbar_utils.dart';
 
 class StudentDashboard extends StatefulWidget {
   const StudentDashboard({super.key});
@@ -359,34 +360,22 @@ class _StudentProfileTabState extends State<StudentProfileTab> {
         if (imageUrl != null) {
           final error = await authProvider.updateProfileImage(imageUrl);
           if (error != null && mounted) {
-            _showSnackBar(error, Colors.redAccent);
+            SnackbarUtils.showError(context, error);
           } else if (mounted) {
-            _showSnackBar("Profile updated successfully!", Colors.green);
+            SnackbarUtils.showSuccess(context, "Profile updated successfully!");
           }
         } else if (mounted) {
-          _showSnackBar(
-              "Failed to upload image. Please check your Cloudinary credentials.",
-              Colors.redAccent);
+          SnackbarUtils.showError(context,
+              "Failed to upload image. Please check your Cloudinary credentials.");
         }
       }
     } catch (e) {
       if (mounted) {
-        _showSnackBar("Error: $e", Colors.redAccent);
+        SnackbarUtils.showError(context, "Error: $e");
       }
     } finally {
       if (mounted) setState(() => _isUploading = false);
     }
-  }
-
-  void _showSnackBar(String message, Color color) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: color,
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-      ),
-    );
   }
 
   @override

@@ -3,6 +3,7 @@ import 'package:edupresence/providers/student_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
+import 'package:edupresence/widgets/snackbar_utils.dart';
 
 class MarkAttendance extends StatefulWidget {
   const MarkAttendance({super.key});
@@ -252,16 +253,24 @@ class _MarkAttendanceState extends State<MarkAttendance> {
                                       const Color(0xFFEF4444).withOpacity(0.3),
                                   activeTrackColor:
                                       const Color(0xFF10B981).withOpacity(0.3),
-                                  onChanged: (value) {
+                                  onChanged: (value) async {
                                     final dateKey = DateFormat('yyyy-MM-dd')
                                         .format(selectedDate);
-                                    Provider.of<StudentProvider>(context,
-                                            listen: false)
-                                        .markAttendance(
-                                      studentId: student.id,
-                                      date: dateKey,
-                                      status: value ? 'Present' : 'Absent',
-                                    );
+                                    try {
+                                      await Provider.of<StudentProvider>(
+                                              context,
+                                              listen: false)
+                                          .markAttendance(
+                                        studentId: student.id,
+                                        date: dateKey,
+                                        status: value ? 'Present' : 'Absent',
+                                      );
+                                    } catch (e) {
+                                      if (context.mounted) {
+                                        SnackbarUtils.showError(
+                                            context, "Failed: $e");
+                                      }
+                                    }
                                   },
                                 ),
                               ),

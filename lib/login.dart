@@ -3,6 +3,7 @@ import 'package:edupresence/providers/auth_provider.dart';
 import 'package:edupresence/signup.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:edupresence/widgets/snackbar_utils.dart';
 
 class Login extends StatefulWidget {
   const Login({super.key});
@@ -157,16 +158,7 @@ class _LoginState extends State<Login> {
                                   if (mounted)
                                     setState(() => _isLoading = false);
                                   if (error != null && mounted) {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(
-                                        content: Text(error),
-                                        backgroundColor: Colors.redAccent,
-                                        behavior: SnackBarBehavior.floating,
-                                        shape: RoundedRectangleBorder(
-                                            borderRadius:
-                                                BorderRadius.circular(10)),
-                                      ),
-                                    );
+                                    SnackbarUtils.showError(context, error);
                                   }
                                 }
                               },
