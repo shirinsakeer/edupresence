@@ -16,6 +16,33 @@ class _AddStudentState extends State<AddStudent> {
   final emailController = TextEditingController();
   final classController = TextEditingController();
   final rollController = TextEditingController();
+  final totalDaysController = TextEditingController();
+  String? _selectedDepartment;
+  String? _selectedSemester;
+
+  final List<String> _departments = [
+    'Computer Science',
+    'Information Technology',
+    'Electronics',
+    'Mechanical',
+    'Civil',
+    'Electrical',
+    'Mathematics',
+    'Physics',
+    'Chemistry',
+    'Other',
+  ];
+
+  final List<String> _semesters = [
+    'Semester 1',
+    'Semester 2',
+    'Semester 3',
+    'Semester 4',
+    'Semester 5',
+    'Semester 6',
+    'Semester 7',
+    'Semester 8',
+  ];
 
   void _showSuccessDialog(String email, String password) {
     showDialog(
@@ -155,6 +182,90 @@ class _AddStudentState extends State<AddStudent> {
                     ),
                   ],
                 ),
+                const SizedBox(height: 20),
+                // Department Dropdown
+                Container(
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF8FAFC),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: const Color(0xFFE2E8F0)),
+                  ),
+                  child: DropdownButtonFormField<String>(
+                    value: _selectedDepartment,
+                    decoration: const InputDecoration(
+                      labelText: "Department",
+                      labelStyle: TextStyle(color: Color(0xFF64748B)),
+                      prefixIcon: Icon(Icons.business_rounded,
+                          color: Color(0xFF475569)),
+                      filled: true,
+                      fillColor: Color(0xFFF8FAFC),
+                      border: InputBorder.none,
+                      enabledBorder: InputBorder.none,
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.all(Radius.circular(16)),
+                        borderSide:
+                            BorderSide(color: Color(0xFF1A56BE), width: 2),
+                      ),
+                    ),
+                    items: _departments
+                        .map((dept) => DropdownMenuItem(
+                              value: dept,
+                              child: Text(dept),
+                            ))
+                        .toList(),
+                    onChanged: (value) =>
+                        setState(() => _selectedDepartment = value),
+                    validator: (value) =>
+                        value == null ? 'Select department' : null,
+                  ),
+                ),
+                const SizedBox(height: 20),
+                // Semester Dropdown
+                Container(
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF8FAFC),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: const Color(0xFFE2E8F0)),
+                  ),
+                  child: DropdownButtonFormField<String>(
+                    value: _selectedSemester,
+                    decoration: const InputDecoration(
+                      labelText: "Semester",
+                      labelStyle: TextStyle(color: Color(0xFF64748B)),
+                      prefixIcon: Icon(Icons.calendar_month_outlined,
+                          color: Color(0xFF475569)),
+                      filled: true,
+                      fillColor: Color(0xFFF8FAFC),
+                      border: InputBorder.none,
+                      enabledBorder: InputBorder.none,
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.all(Radius.circular(16)),
+                        borderSide:
+                            BorderSide(color: Color(0xFF1A56BE), width: 2),
+                      ),
+                    ),
+                    items: _semesters
+                        .map((sem) => DropdownMenuItem(
+                              value: sem,
+                              child: Text(sem),
+                            ))
+                        .toList(),
+                    onChanged: (value) =>
+                        setState(() => _selectedSemester = value),
+                    validator: (value) =>
+                        value == null ? 'Select semester' : null,
+                  ),
+                ),
+                const SizedBox(height: 20),
+                _buildField(
+                  controller: totalDaysController,
+                  label: "Total Days Required",
+                  icon: Icons.event_available_rounded,
+                  keyboardType: TextInputType.number,
+                  validator: (v) => v!.isEmpty || int.tryParse(v) == null
+                      ? 'Enter valid number'
+                      : null,
+                ),
                 const SizedBox(height: 48),
                 SizedBox(
                   width: double.infinity,
@@ -178,6 +289,10 @@ class _AddStudentState extends State<AddStudent> {
                                 email: email,
                                 className: classController.text.trim(),
                                 rollNumber: roll,
+                                department: _selectedDepartment!,
+                                semester: _selectedSemester!,
+                                totalDaysRequired:
+                                    int.parse(totalDaysController.text.trim()),
                               );
                               if (error != null && mounted) {
                                 SnackbarUtils.showError(context, error);

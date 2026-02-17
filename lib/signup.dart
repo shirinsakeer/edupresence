@@ -19,6 +19,20 @@ class _SignupState extends State<Signup> {
       TextEditingController();
   bool _isLoading = false;
   bool _isPasswordVisible = false;
+  String? _selectedDepartment;
+
+  final List<String> _departments = [
+    'Computer Science',
+    'Information Technology',
+    'Electronics',
+    'Mechanical',
+    'Civil',
+    'Electrical',
+    'Mathematics',
+    'Physics',
+    'Chemistry',
+    'Other',
+  ];
 
   @override
   Widget build(BuildContext context) {
@@ -117,6 +131,48 @@ class _SignupState extends State<Signup> {
                           : null,
                     ),
                     const SizedBox(height: 20),
+                    Container(
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFF8FAFC),
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: const Color(0xFFE2E8F0)),
+                      ),
+                      child: DropdownButtonFormField<String>(
+                        value: _selectedDepartment,
+                        decoration: const InputDecoration(
+                          hintText: "Select Department",
+                          hintStyle: TextStyle(
+                              color: Color(0xFF94A3B8),
+                              fontWeight: FontWeight.normal),
+                          prefixIcon: Icon(Icons.business_rounded,
+                              color: Color(0xFF1A56BE), size: 22),
+                          filled: true,
+                          fillColor: Colors.transparent,
+                          contentPadding: EdgeInsets.symmetric(
+                              vertical: 18, horizontal: 20),
+                          border: InputBorder.none,
+                          enabledBorder: InputBorder.none,
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.all(Radius.circular(16)),
+                            borderSide:
+                                BorderSide(color: Color(0xFF1A56BE), width: 2),
+                          ),
+                        ),
+                        items: _departments
+                            .map((dept) => DropdownMenuItem(
+                                  value: dept,
+                                  child: Text(dept,
+                                      style: const TextStyle(
+                                          fontWeight: FontWeight.w500)),
+                                ))
+                            .toList(),
+                        onChanged: (value) =>
+                            setState(() => _selectedDepartment = value),
+                        validator: (value) =>
+                            value == null ? 'Select your department' : null,
+                      ),
+                    ),
+                    const SizedBox(height: 20),
                     _buildInputField(
                       controller: passwordcontroller,
                       hint: "Password",
@@ -163,6 +219,7 @@ class _SignupState extends State<Signup> {
                                     namecontroller.text.trim(),
                                     emailcontroller.text.trim(),
                                     passwordcontroller.text.trim(),
+                                    _selectedDepartment!,
                                   );
                                   if (mounted)
                                     setState(() => _isLoading = false);

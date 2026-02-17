@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:edupresence/providers/student_provider.dart';
+import 'package:edupresence/providers/auth_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
@@ -14,10 +15,26 @@ class MarkAttendance extends StatefulWidget {
 
 class _MarkAttendanceState extends State<MarkAttendance> {
   String? selectedClass;
+  String? selectedSemester;
   DateTime selectedDate = DateTime.now();
+
+  final List<String> semesters = [
+    'All',
+    'Semester 1',
+    'Semester 2',
+    'Semester 3',
+    'Semester 4',
+    'Semester 5',
+    'Semester 6',
+    'Semester 7',
+    'Semester 8',
+  ];
+
   @override
   Widget build(BuildContext context) {
     final studentProvider = Provider.of<StudentProvider>(context);
+    final authProvider = Provider.of<AuthProvider>(context);
+    final teacherDepartment = authProvider.userData?['department'];
 
     return Scaffold(
       backgroundColor: const Color(0xFFF8FAFC),

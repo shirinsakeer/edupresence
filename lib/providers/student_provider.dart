@@ -17,6 +17,9 @@ class StudentProvider with ChangeNotifier {
     required String email,
     required String className,
     required String rollNumber,
+    required String department,
+    required String semester,
+    required int totalDaysRequired,
   }) async {
     _isLoading = true;
     notifyListeners();
@@ -58,6 +61,9 @@ class StudentProvider with ChangeNotifier {
         'email': email,
         'className': className,
         'rollNumber': rollNumber,
+        'department': department,
+        'semester': semester,
+        'totalDaysRequired': totalDaysRequired,
         'role': 'student',
         'createdAt': FieldValue.serverTimestamp(),
         'attendance': {},
@@ -124,6 +130,22 @@ class StudentProvider with ChangeNotifier {
     return _firestore
         .collection('students')
         .where('className', isEqualTo: className)
+        .snapshots();
+  }
+
+  Stream<QuerySnapshot> getStudentsByDepartment(String department) {
+    return _firestore
+        .collection('students')
+        .where('department', isEqualTo: department)
+        .snapshots();
+  }
+
+  Stream<QuerySnapshot> getStudentsByDepartmentAndSemester(
+      String department, String semester) {
+    return _firestore
+        .collection('students')
+        .where('department', isEqualTo: department)
+        .where('semester', isEqualTo: semester)
         .snapshots();
   }
 

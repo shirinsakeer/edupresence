@@ -6,6 +6,8 @@ import 'package:edupresence/screens/teacher/manage_classes.dart';
 import 'package:edupresence/screens/teacher/mark_attendance.dart';
 import 'package:edupresence/screens/student/chatbot.dart';
 import 'package:edupresence/services/cloudinary_service.dart';
+import 'package:edupresence/screens/teacher/change_password.dart';
+import 'package:edupresence/screens/teacher/appearance.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
@@ -143,6 +145,23 @@ class TeacherHomeTab extends StatelessWidget {
                           style: TextStyle(
                               color: Color(0xFF64748B),
                               fontWeight: FontWeight.w500)),
+                      const SizedBox(height: 4),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 12, vertical: 6),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF1A56BE).withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Text(
+                          'Department: ${authProvider.userData?['department'] ?? 'N/A'}',
+                          style: const TextStyle(
+                            color: Color(0xFF1A56BE),
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
                     ],
                   ),
                 ),
@@ -161,8 +180,12 @@ class TeacherHomeTab extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 32),
+            // Department-based student count
             StreamBuilder<QuerySnapshot>(
-              stream: studentProvider.getAllStudents(),
+              stream: authProvider.userData?['department'] != null
+                  ? studentProvider.getStudentsByDepartment(
+                      authProvider.userData!['department'])
+                  : studentProvider.getAllStudents(),
               builder: (context, snapshot) {
                 final totalStudents = snapshot.data?.docs.length ?? 0;
                 int presentToday = 0;
@@ -663,6 +686,42 @@ class _TeacherProfileTabState extends State<TeacherProfileTab> {
               Icons.color_lens_rounded, "Appearance", "Custom dashbord theme"),
           _profileItem(Icons.help_center_rounded, "Support Center",
               "Contact EduPresence team"),
+          // Department info
+          Container(
+            margin: const EdgeInsets.only(top: 12),
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: const Color(0xFFE2E8F0)),
+            ),
+            child: Row(
+              children: [
+                const Icon(Icons.business_rounded, color: Color(0xFF1A56BE)),
+                const SizedBox(width: 12),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      "Your Department",
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Color(0xFF64748B),
+                      ),
+                    ),
+                    Text(
+                      userData?['department'] ?? 'Not Set',
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF1E293B),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
           const SizedBox(height: 40),
           SizedBox(
             width: double.infinity,
@@ -707,7 +766,23 @@ class _TeacherProfileTabState extends State<TeacherProfileTab> {
             style: const TextStyle(fontSize: 12, color: Color(0xFF94A3B8))),
         trailing: const Icon(Icons.arrow_forward_ios_rounded,
             size: 14, color: Color(0xFFCBD5E1)),
-        onTap: () {},
+        onTap: () {
+          if (title == "Account Security") {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => const ChangePasswordScreen(),
+              ),
+            );
+          } else if (title == "Appearance") {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => const AppearanceScreen(),
+              ),
+            );
+          }
+        },
       ),
     );
   }
