@@ -1,9 +1,8 @@
-import 'dart:convert';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
+import 'package:edupresence/services/email_service.dart';
 
 class StudentProvider with ChangeNotifier {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -68,8 +67,11 @@ class StudentProvider with ChangeNotifier {
       });
 
       // 5. Send Email via EmailJS
-      await sendCredentialsEmail(
-          email: email, name: name, password: tempPassword);
+      await EmailService.sendStudentCredentials(
+        studentEmail: email,
+        studentName: name,
+        password: tempPassword,
+      );
 
       _isLoading = false;
       notifyListeners();
@@ -78,49 +80,6 @@ class StudentProvider with ChangeNotifier {
       _isLoading = false;
       notifyListeners();
       return e.toString();
-    }
-  }
-
-  Future<void> sendCredentialsEmail({
-    required String email,
-    required String name,
-    required String password,
-  }) async {
-    const serviceId = 'service_default';
-    const templateId = 'template_student_creds';
-    const userId = 'YOUR_USER_ID';
-
-    if (userId == 'YOUR_USER_ID') {
-      debugPrint('WARNING: EmailJS not configured. Skipping email sending.');
-      debugPrint('Mock Email to: $email');
-      debugPrint(
-          'Message: Your login credentials for EduPresence are:\nEmail: $email\nPassword: $password');
-      return;
-    }
-
-    final url = Uri.parse('https://api.emailjs.com/api/v1.0/email/send');
-    try {
-      final response = await http.post(
-        url,
-        headers: {
-          'Content-Type': 'application/json',
-          'origin': 'http://localhost',
-        },
-        body: json.encode({
-          'service_id': serviceId,
-          'template_id': templateId,
-          'user_id': userId,
-          'template_params': {
-            'to_email': email,
-            'to_name': name,
-            'message':
-                'Your login credentials for EduPresence are:\nEmail: $email\nPassword: $password',
-          },
-        }),
-      );
-      debugPrint('Email response: ${response.statusCode} ${response.body}');
-    } catch (e) {
-      debugPrint('Failed to send email: $e');
     }
   }
 

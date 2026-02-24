@@ -12,6 +12,7 @@ import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
+import 'package:edupresence/screens/teacher/student_detail.dart';
 import 'package:edupresence/widgets/snackbar_utils.dart';
 
 class TeacherDashboard extends StatefulWidget {
@@ -492,6 +493,17 @@ class TeacherStudentsTab extends StatelessWidget {
                   ],
                 ),
                 child: ListTile(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => StudentDetailScreen(
+                          student: student,
+                          studentId: students[index].id,
+                        ),
+                      ),
+                    );
+                  },
                   contentPadding:
                       const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                   leading: Hero(

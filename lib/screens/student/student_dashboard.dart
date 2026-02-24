@@ -85,7 +85,7 @@ class StudentHomeTab extends StatelessWidget {
     final authProvider = Provider.of<AuthProvider>(context);
     final userData = authProvider.userData;
     final attendance = userData?['attendance'] as Map<String, dynamic>? ?? {};
-    final int totalDaysRequired = userData?['totalDaysRequired'] ?? 0;
+    final int totalWorkingHours = userData?['totalWorkingHours'] ?? 0;
     final String department = userData?['department'] ?? 'N/A';
     final String semester = userData?['semester'] ?? 'N/A';
 
@@ -93,9 +93,9 @@ class StudentHomeTab extends StatelessWidget {
     int absentDays = attendance.values.where((v) => v == 'Absent').length;
     int totalRecorded = attendance.length;
 
-    // Calculate percentage based on totalDaysRequired if available, otherwise use recorded days
-    double percentage = totalDaysRequired > 0
-        ? (presentDays / totalDaysRequired) * 100
+    // Calculate percentage based on totalWorkingHours if available, otherwise use recorded days
+    double percentage = totalWorkingHours > 0
+        ? (presentDays / totalWorkingHours) * 100
         : (totalRecorded == 0 ? 0 : (presentDays / totalRecorded) * 100);
 
     return Scaffold(
@@ -238,7 +238,7 @@ class StudentHomeTab extends StatelessWidget {
                               _miniStat('ABSENT', '$absentDays'),
                               Container(
                                   width: 1, height: 20, color: Colors.white24),
-                              _miniStat('REQUIRED', '$totalDaysRequired'),
+                              _miniStat('REQUIRED', '$totalWorkingHours'),
                             ],
                           ),
                         ),
