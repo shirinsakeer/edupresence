@@ -4,10 +4,9 @@ import 'package:http/http.dart' as http;
 
 class EmailService {
   // Replace these with your actual EmailJS credentials
-  static const String _serviceId = 'service_edupresence';
-  static const String _templateId = 'template_student_creds';
-  static const String _publicKey =
-      'USER_PUBLIC_KEY'; // Replace with your EmailJS Public Key
+  static const String _serviceId = 'service_vchknr2';
+  static const String _templateId = 'template_ukwi087';
+  static const String _publicKey = 'dva45dN9q3pwJsQyf';
 
   static Future<bool> sendStudentCredentials({
     required String studentEmail,
@@ -29,9 +28,13 @@ class EmailService {
           'user_id': _publicKey,
           'template_params': {
             'to_email': studentEmail,
-            'to_name': studentName,
-            'user_password': password,
-            'app_name': 'EduPresence',
+            'name': studentName,
+            'email': studentEmail, // Used for Reply To in user's template
+            'subject': 'Your EduPresence Credentials',
+            'message': 'Welcome to EduPresence! Your account has been created.\n\n'
+                'Email: $studentEmail\n'
+                'Password: $password\n\n'
+                'Please change your password after logging in for the first time.',
           },
         }),
       );

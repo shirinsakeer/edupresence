@@ -1,7 +1,9 @@
+import 'package:edupresence/services/email_service.dart';
+import 'package:edupresence/widgets/snackbar_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
-class StudentDetailScreen extends StatelessWidget {
+class StudentDetailScreen extends StatefulWidget {
   final Map<String, dynamic> student;
   final String studentId;
 
@@ -12,16 +14,59 @@ class StudentDetailScreen extends StatelessWidget {
   });
 
   @override
+  State<StudentDetailScreen> createState() => _StudentDetailScreenState();
+}
+
+class _StudentDetailScreenState extends State<StudentDetailScreen> {
+  bool _isIssuing = false;
+
+  Future<void> _issueCredentials() async {
+    final String name = widget.student['name'] ?? 'Student';
+    final String? email = widget.student['email'];
+    final String rollNumber = widget.student['rollNumber'] ?? '000';
+
+    if (email == null || email.isEmpty) {
+      SnackbarUtils.showError(context, "Student email not found.");
+      return;
+    }
+
+    setState(() => _isIssuing = true);
+
+    try {
+      // Formula used during creation: Std${rollNumber}123
+      String tempPassword = "Std${rollNumber}123";
+
+      bool success = await EmailService.sendStudentCredentials(
+        studentEmail: email,
+        studentName: name,
+        password: tempPassword,
+      );
+
+      if (success && mounted) {
+        SnackbarUtils.showSuccess(
+            context, "Credentials sent to $email successfully!");
+      } else if (mounted) {
+        SnackbarUtils.showError(context,
+            "Failed to send credentials. Please check EmailJS config.");
+      }
+    } catch (e) {
+      if (mounted) SnackbarUtils.showError(context, "Error: $e");
+    } finally {
+      if (mounted) setState(() => _isIssuing = false);
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final String name = student['name'] ?? 'Unknown';
-    final String email = student['email'] ?? 'N/A';
-    final String rollNumber = student['rollNumber'] ?? 'N/A';
-    final String department = student['department'] ?? 'N/A';
-    final String semester = student['semester'] ?? 'N/A';
-    final int totalWorkingHours = student['totalWorkingHours'] ?? 0;
-    final String? profileImage = student['profileImage'];
+    final String name = widget.student['name'] ?? 'Unknown';
+    final String email = widget.student['email'] ?? 'N/A';
+    final String rollNumber = widget.student['rollNumber'] ?? 'N/A';
+    final String department = widget.student['department'] ?? 'N/A';
+    final String semester = widget.student['semester'] ?? 'N/A';
+    final int totalWorkingHours = widget.student['totalWorkingHours'] ?? 0;
+    final String? profileImage = widget.student['profileImage'];
     final Map<String, dynamic> attendance =
-        student['attendance'] as Map<String, dynamic>? ?? {};
+        widget.student['attendance'] as Map<String, dynamic>? ?? {};
 
     int presentCount = attendance.values.where((v) => v == 'Present').length;
     int absentCount = attendance.values.where((v) => v == 'Absent').length;
@@ -87,7 +132,31 @@ class StudentDetailScreen extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _buildSectionTitle('Basic Information'),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      _buildSectionTitle('Basic Information'),
+                      if (_isIssuing)
+                        const SizedBox(
+                          height: 20,
+                          width: 20,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      else
+                        TextButton.icon(
+                          onPressed: _issueCredentials,
+                          icon: const Icon(Icons.vpn_key_outlined, size: 18),
+                          label: const Text(
+                            'Issue Credentials',
+                            style: TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                          style: TextButton.styleFrom(
+                            foregroundColor: const Color(0xFF1A56BE),
+                            padding: const EdgeInsets.symmetric(horizontal: 12),
+                          ),
+                        ),
+                    ],
+                  ),
                   const SizedBox(height: 16),
                   _buildInfoCard(context, [
                     _buildInfoTile(Icons.email_outlined, 'Email', email),
