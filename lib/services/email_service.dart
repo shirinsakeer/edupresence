@@ -14,28 +14,31 @@ class EmailService {
   }) async {
     final url = Uri.parse('https://api.emailjs.com/api/v1.0/email/send');
 
-    // Build template params — variable names MUST match your EmailJS template exactly.
-    // Common variable names in EmailJS "Student Credential" templates:
+    // Build template params — using multiple common names to ensure compatibility with various EmailJS templates
     final templateParams = {
-      'subject': 'Your EduPresence Credentials', // {{subject}}
+      'to_email': studentEmail, // Best practice for "To Email" field
+      'user_email': studentEmail, // Common alternative
+      'email': studentEmail, // Common alternative
+      'to_name': studentName, // Best practice for recipient name
+      'student_name': studentName, // Specific to our template
+      'password': password, // The dynamic password
       'message': 'Hello $studentName,\n\n'
-          'Your EduPresence account password is: $password\n\n'
-          'Email: $studentEmail\n', // {{message}}
-      'to_email': studentEmail, // {{to_email}}
-      'name': 'EduPresence Admin', // {{name}} (used for From Name)
-      'email': studentEmail, // {{email}} (used for Reply To)
+          'Your EduPresence account credentials are ready.\n\n'
+          'Email: $studentEmail\n'
+          'Temporary Password: $password\n\n'
+          'Please change your password after logging in.',
+      'subject': 'Your EduPresence Digital ID Credentials',
     };
 
-    debugPrint('📧 [EmailService] Sending credentials to: $studentEmail');
     debugPrint(
-        '📧 [EmailService] Template params: ${json.encode(templateParams)}');
+        '📧 [EmailService] Attempting to send credentials to: $studentEmail');
 
     try {
       final response = await http.post(
         url,
         headers: {
           'Content-Type': 'application/json',
-          'origin': 'http://localhost',
+          'Accept': 'application/json',
         },
         body: json.encode({
           'service_id': _serviceId,
@@ -45,20 +48,19 @@ class EmailService {
         }),
       );
 
-      debugPrint('📧 [EmailService] Response status: ${response.statusCode}');
-      debugPrint('📧 [EmailService] Response body: ${response.body}');
+      debugPrint('📧 [EmailService] Status: ${response.statusCode}');
+      debugPrint('📧 [EmailService] Body: ${response.body}');
 
       if (response.statusCode == 200) {
-        debugPrint('✅ [EmailService] Email sent successfully to $studentEmail');
+        debugPrint('✅ [EmailService] Credentials sent successfully');
         return true;
       } else {
         debugPrint(
-            '❌ [EmailService] Failed! Status: ${response.statusCode}, Body: ${response.body}');
+            '❌ [EmailService] Send failed. Status: ${response.statusCode}');
         return false;
       }
-    } catch (e, stack) {
-      debugPrint('❌ [EmailService] Exception: $e');
-      debugPrint('❌ [EmailService] Stack: $stack');
+    } catch (e) {
+      debugPrint('❌ [EmailService] Error occurred: $e');
       return false;
     }
   }

@@ -67,7 +67,7 @@ class StudentProvider with ChangeNotifier {
       });
 
       // 5. Send Email via EmailJS
-      await EmailService.sendStudentCredentials(
+      bool emailSent = await EmailService.sendStudentCredentials(
         studentEmail: email,
         studentName: name,
         password: tempPassword,
@@ -75,6 +75,11 @@ class StudentProvider with ChangeNotifier {
 
       _isLoading = false;
       notifyListeners();
+
+      if (!emailSent) {
+        return "Student added, but failed to send credentials email. Please issue them manually from the student details.";
+      }
+
       return null;
     } catch (e) {
       _isLoading = false;
