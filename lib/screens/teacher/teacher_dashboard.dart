@@ -13,6 +13,7 @@ import 'dart:io';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:edupresence/screens/teacher/student_detail.dart';
+import 'package:edupresence/services/email_service.dart';
 import 'package:edupresence/widgets/snackbar_utils.dart';
 
 class TeacherDashboard extends StatefulWidget {
@@ -788,6 +789,29 @@ class _TeacherProfileTabState extends State<TeacherProfileTab> {
                   )),
           _profileItem(context, Icons.help_center_rounded, "Support Center",
               "Contact EduPresence team", () {}),
+          _profileItem(
+            context,
+            Icons.email_outlined,
+            "Test EmailJS",
+            "Verify email configuration",
+            () async {
+              SnackbarUtils.showSuccess(context, "Sending test email...");
+              final success = await EmailService.sendStudentCredentials(
+                studentEmail: authProvider.userData?['email'] ?? '',
+                studentName: authProvider.userData?['name'] ?? 'Tester',
+                password: 'TestPassword123',
+              );
+              if (mounted) {
+                if (success) {
+                  SnackbarUtils.showSuccess(
+                      context, "Test email sent! Check your inbox.");
+                } else {
+                  SnackbarUtils.showError(
+                      context, "Test failed. Check terminal logs.");
+                }
+              }
+            },
+          ),
           // Department info
           Container(
             margin: const EdgeInsets.only(top: 12),
