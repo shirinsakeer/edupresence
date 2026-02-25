@@ -47,7 +47,7 @@ dependencies:
   shared_preferences: ^2.3.3
   modal_bottom_sheet: ^3.0.0
 flutter_launcher_icons:
-  android: true
+  android: "launcher_icon"
   ios: true
   image_path: "assets/Icon/icon.png"
 
