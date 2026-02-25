@@ -117,7 +117,7 @@ class _ChatBotScreenState extends State<ChatBotScreen>
                 ),
                 const SizedBox(width: 6),
                 Text(
-                  'Powered by Gemini AI',
+                  'Powered by Groq AI',
                   style: TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.w500,

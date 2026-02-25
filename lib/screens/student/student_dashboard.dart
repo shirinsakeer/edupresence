@@ -10,6 +10,7 @@ import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import 'package:provider/provider.dart';
 import 'package:edupresence/widgets/snackbar_utils.dart';
+import 'package:edupresence/services/pdf_report_service.dart';
 
 class StudentDashboard extends StatefulWidget {
   const StudentDashboard({super.key});
@@ -83,255 +84,287 @@ class StudentHomeTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final authProvider = Provider.of<AuthProvider>(context);
-    final userData = authProvider.userData;
-    final attendance = userData?['attendance'] as Map<String, dynamic>? ?? {};
-    final int totalWorkingHours = userData?['totalWorkingHours'] ?? 0;
-    final String department = userData?['department'] ?? 'N/A';
-    final String semester = userData?['semester'] ?? 'N/A';
+    final user = authProvider.user;
 
-    int presentDays = attendance.values.where((v) => v == 'Present').length;
-    int absentDays = attendance.values.where((v) => v == 'Absent').length;
-    int totalRecorded = attendance.length;
+    if (user == null)
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
 
-    // Calculate percentage based on totalWorkingHours if available, otherwise use recorded days
-    double percentage = totalWorkingHours > 0
-        ? (presentDays / totalWorkingHours) * 100
-        : (totalRecorded == 0 ? 0 : (presentDays / totalRecorded) * 100);
+    return StreamBuilder<DocumentSnapshot>(
+      stream: FirebaseFirestore.instance
+          .collection('students')
+          .doc(user.uid)
+          .snapshots(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Scaffold(
+              body: Center(child: CircularProgressIndicator()));
+        }
 
-    return Scaffold(
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-      appBar: AppBar(
-          automaticallyImplyLeading: false,
-          backgroundColor: Theme.of(context).appBarTheme.backgroundColor,
-          title: Hero(
-            tag: 'logo',
-            child: Image.asset("assets/logo.png",
-                height: 60,
-                errorBuilder: (c, e, s) => const Text("EduPresence")),
-          ),
-          actions: [
-            IconButton(
-              icon: Stack(
-                children: [
-                  Icon(Icons.notifications_none_rounded,
-                      color: Theme.of(context).primaryColor),
-                  Positioned(
-                    right: 0,
-                    top: 0,
-                    child: Container(
-                      width: 8,
-                      height: 8,
-                      decoration: const BoxDecoration(
-                        color: Colors.red,
-                        shape: BoxShape.circle,
-                      ),
-                    ),
-                  ),
-                ],
+        if (!snapshot.hasData || !snapshot.data!.exists) {
+          return const Scaffold(
+              body: Center(child: Text("Unable to load profile data")));
+        }
+
+        final userData = snapshot.data!.data() as Map<String, dynamic>;
+        final attendance =
+            userData['attendance'] as Map<String, dynamic>? ?? {};
+        final int totalWorkingHours = userData['totalWorkingHours'] ?? 0;
+        final String department = userData['department'] ?? 'N/A';
+        final String semester = userData['semester'] ?? 'N/A';
+
+        int presentDays = attendance.values.where((v) => v == 'Present').length;
+        int absentDays = attendance.values.where((v) => v == 'Absent').length;
+        int totalRecorded = attendance.length;
+
+        double percentage = totalWorkingHours > 0
+            ? (presentDays / totalWorkingHours) * 100
+            : (totalRecorded == 0 ? 0 : (presentDays / totalRecorded) * 100);
+
+        return Scaffold(
+          backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+          appBar: AppBar(
+              automaticallyImplyLeading: false,
+              backgroundColor: Theme.of(context).appBarTheme.backgroundColor,
+              title: Hero(
+                tag: 'logo',
+                child: Image.asset("assets/logo.png",
+                    height: 60,
+                    errorBuilder: (c, e, s) => const Text("EduPresence")),
               ),
-              onPressed: () => _showNotifications(context, userData?['uid']),
-            ),
-            IconButton(
-                icon: Icon(Icons.auto_awesome_rounded,
-                    color: Theme.of(context).primaryColor),
-                onPressed: () => Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => const ChatBotScreen()))),
-            const SizedBox(width: 8),
-          ]),
-      body: CustomScrollView(
-        physics: const BouncingScrollPhysics(),
-        slivers: [
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.all(24),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                      'Aloha, ${userData?['name']?.split(' ')[0] ?? 'Student'}!',
-                      style: TextStyle(
-                          fontSize: 28,
-                          fontWeight: FontWeight.w900,
-                          color: Theme.of(context).textTheme.bodyLarge?.color,
-                          letterSpacing: -0.5)),
-                  const SizedBox(height: 4),
-                  Row(
+              actions: [
+                IconButton(
+                  icon: Stack(
                     children: [
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 12, vertical: 6),
-                        decoration: BoxDecoration(
-                          color:
-                              Theme.of(context).primaryColor.withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(8),
+                      Icon(Icons.notifications_none_rounded,
+                          color: Theme.of(context).primaryColor),
+                      Positioned(
+                        right: 0,
+                        top: 0,
+                        child: Container(
+                          width: 8,
+                          height: 8,
+                          decoration: const BoxDecoration(
+                            color: Colors.red,
+                            shape: BoxShape.circle,
+                          ),
                         ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
+                      ),
+                    ],
+                  ),
+                  onPressed: () => _showNotifications(context, user.uid),
+                ),
+                IconButton(
+                    icon: Icon(Icons.auto_awesome_rounded,
+                        color: Theme.of(context).primaryColor),
+                    onPressed: () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => const ChatBotScreen()))),
+                const SizedBox(width: 8),
+              ]),
+          body: CustomScrollView(
+            physics: const BouncingScrollPhysics(),
+            slivers: [
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.all(24),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                          'Aloha, ${userData['name']?.split(' ')[0] ?? 'Student'}!',
+                          style: TextStyle(
+                              fontSize: 28,
+                              fontWeight: FontWeight.w900,
+                              color:
+                                  Theme.of(context).textTheme.bodyLarge?.color,
+                              letterSpacing: -0.5)),
+                      const SizedBox(height: 4),
+                      Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 12, vertical: 6),
+                            decoration: BoxDecoration(
+                              color: Theme.of(context)
+                                  .primaryColor
+                                  .withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(Icons.school_rounded,
+                                    size: 14,
+                                    color: Theme.of(context).primaryColor),
+                                const SizedBox(width: 4),
+                                Text(
+                                  '$department • $semester',
+                                  style: TextStyle(
+                                    color: Theme.of(context).primaryColor,
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 32),
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(28),
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                              colors: [
+                                Theme.of(context).primaryColor,
+                                Theme.of(context).primaryColor.withOpacity(0.8)
+                              ]),
+                          borderRadius: BorderRadius.circular(24),
+                          boxShadow: [
+                            BoxShadow(
+                                color: Theme.of(context)
+                                    .primaryColor
+                                    .withOpacity(0.2),
+                                blurRadius: 20,
+                                offset: const Offset(0, 10))
+                          ],
+                        ),
+                        child: Column(
                           children: [
-                            Icon(Icons.school_rounded,
-                                size: 14,
-                                color: Theme.of(context).primaryColor),
-                            const SizedBox(width: 4),
-                            Text(
-                              '$department • $semester',
-                              style: TextStyle(
-                                color: Theme.of(context).primaryColor,
-                                fontSize: 12,
-                                fontWeight: FontWeight.bold,
+                            const Text('ATTENDANCE SCORE',
+                                style: TextStyle(
+                                    color: Colors.white70,
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w800,
+                                    letterSpacing: 1.5)),
+                            const SizedBox(height: 12),
+                            Text('${percentage.toStringAsFixed(1)}%',
+                                style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 56,
+                                    fontWeight: FontWeight.w900)),
+                            const SizedBox(height: 24),
+                            Container(
+                              padding: const EdgeInsets.all(16),
+                              decoration: BoxDecoration(
+                                color: Colors.white.withOpacity(0.1),
+                                borderRadius: BorderRadius.circular(16),
+                              ),
+                              child: Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceAround,
+                                children: [
+                                  _miniStat('PRESENT', '$presentDays'),
+                                  Container(
+                                      width: 1,
+                                      height: 20,
+                                      color: Colors.white24),
+                                  _miniStat('ABSENT', '$absentDays'),
+                                  Container(
+                                      width: 1,
+                                      height: 20,
+                                      color: Colors.white24),
+                                  _miniStat('REQUIRED', '$totalWorkingHours'),
+                                ],
                               ),
                             ),
                           ],
                         ),
                       ),
+                      const SizedBox(height: 40),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text("Activity Timeline",
+                              style: TextStyle(
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.w800,
+                                  color: Theme.of(context)
+                                      .textTheme
+                                      .bodyLarge
+                                      ?.color)),
+                          TextButton(
+                            onPressed: () {},
+                            child: const Text("View All",
+                                style: TextStyle(fontWeight: FontWeight.bold)),
+                          )
+                        ],
+                      ),
+                      const SizedBox(height: 12),
                     ],
-                  ),
-                  const SizedBox(height: 32),
-                  Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.all(28),
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                          colors: [
-                            Theme.of(context).primaryColor,
-                            Theme.of(context).primaryColor.withOpacity(0.8)
-                          ]),
-                      borderRadius: BorderRadius.circular(24),
-                      boxShadow: [
-                        BoxShadow(
-                            color:
-                                Theme.of(context).primaryColor.withOpacity(0.2),
-                            blurRadius: 20,
-                            offset: const Offset(0, 10))
-                      ],
-                    ),
-                    child: Column(
-                      children: [
-                        const Text('ATTENDANCE SCORE',
-                            style: TextStyle(
-                                color: Colors.white70,
-                                fontSize: 12,
-                                fontWeight: FontWeight.w800,
-                                letterSpacing: 1.5)),
-                        const SizedBox(height: 12),
-                        Text('${percentage.toStringAsFixed(1)}%',
-                            style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 56,
-                                fontWeight: FontWeight.w900)),
-                        const SizedBox(height: 24),
-                        Container(
-                          padding: const EdgeInsets.all(16),
-                          decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.1),
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceAround,
-                            children: [
-                              _miniStat('PRESENT', '$presentDays'),
-                              Container(
-                                  width: 1, height: 20, color: Colors.white24),
-                              _miniStat('ABSENT', '$absentDays'),
-                              Container(
-                                  width: 1, height: 20, color: Colors.white24),
-                              _miniStat('REQUIRED', '$totalWorkingHours'),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 40),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text("Activity Timeline",
-                          style: TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.w800,
-                              color: Theme.of(context)
-                                  .textTheme
-                                  .bodyLarge
-                                  ?.color)),
-                      TextButton(
-                        onPressed: () {},
-                        child: const Text("View All",
-                            style: TextStyle(fontWeight: FontWeight.bold)),
-                      )
-                    ],
-                  ),
-                  const SizedBox(height: 12),
-                ],
-              ),
-            ),
-          ),
-          attendance.isEmpty
-              ? SliverFillRemaining(
-                  child: Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(Icons.history_rounded,
-                            size: 48, color: Colors.grey[300]),
-                        const SizedBox(height: 12),
-                        const Text('No sessions logged yet.',
-                            style: TextStyle(color: Color(0xFF94A3B8))),
-                      ],
-                    ),
-                  ),
-                )
-              : SliverPadding(
-                  padding: const EdgeInsets.fromLTRB(24, 0, 24, 40),
-                  sliver: SliverList(
-                    delegate: SliverChildBuilderDelegate(
-                      (context, index) {
-                        final sortedKeys = attendance.keys.toList()
-                          ..sort((a, b) => b.compareTo(a));
-                        String date = sortedKeys[index];
-                        String status = attendance[date];
-                        return Container(
-                          margin: const EdgeInsets.only(bottom: 12),
-                          decoration: BoxDecoration(
-                            color: Theme.of(context).cardColor,
-                            borderRadius: BorderRadius.circular(18),
-                            border: Border.all(
-                                color: Theme.of(context).dividerColor),
-                          ),
-                          child: ListTile(
-                            leading: _statusIcon(status),
-                            title: Text(date,
-                                style: TextStyle(
-                                    fontWeight: FontWeight.w700,
-                                    color: Theme.of(context)
-                                        .textTheme
-                                        .bodyLarge
-                                        ?.color)),
-                            trailing: Container(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 12, vertical: 6),
-                              decoration: BoxDecoration(
-                                color: _statusColor(status).withOpacity(0.1),
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              child: Text(status,
-                                  style: TextStyle(
-                                      fontWeight: FontWeight.w800,
-                                      fontSize: 11,
-                                      color: _statusColor(status))),
-                            ),
-                          ),
-                        );
-                      },
-                      childCount: attendance.length,
-                    ),
                   ),
                 ),
-        ],
-      ),
+              ),
+              attendance.isEmpty
+                  ? SliverFillRemaining(
+                      child: Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(Icons.history_rounded,
+                                size: 48, color: Colors.grey[300]),
+                            const SizedBox(height: 12),
+                            const Text('No sessions logged yet.',
+                                style: TextStyle(color: Color(0xFF94A3B8))),
+                          ],
+                        ),
+                      ),
+                    )
+                  : SliverPadding(
+                      padding: const EdgeInsets.fromLTRB(24, 0, 24, 40),
+                      sliver: SliverList(
+                        delegate: SliverChildBuilderDelegate(
+                          (context, index) {
+                            final sortedKeys = attendance.keys.toList()
+                              ..sort((a, b) => b.compareTo(a));
+                            String date = sortedKeys[index];
+                            String status = attendance[date];
+                            return Container(
+                              margin: const EdgeInsets.only(bottom: 12),
+                              decoration: BoxDecoration(
+                                color: Theme.of(context).cardColor,
+                                borderRadius: BorderRadius.circular(18),
+                                border: Border.all(
+                                    color: Theme.of(context).dividerColor),
+                              ),
+                              child: ListTile(
+                                leading: _statusIcon(status),
+                                title: Text(date,
+                                    style: TextStyle(
+                                        fontWeight: FontWeight.w700,
+                                        color: Theme.of(context)
+                                            .textTheme
+                                            .bodyLarge
+                                            ?.color)),
+                                trailing: Container(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 12, vertical: 6),
+                                  decoration: BoxDecoration(
+                                    color:
+                                        _statusColor(status).withOpacity(0.1),
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: Text(status,
+                                      style: TextStyle(
+                                          fontWeight: FontWeight.w800,
+                                          fontSize: 11,
+                                          color: _statusColor(status))),
+                                ),
+                              ),
+                            );
+                          },
+                          childCount: attendance.length,
+                        ),
+                      ),
+                    ),
+            ],
+          ),
+        );
+      },
     );
   }
 
@@ -579,11 +612,39 @@ class _StudentProfileTabState extends State<StudentProfileTab> {
               Icons.assignment_outlined,
               "Download Report",
               "Get attendance PDF",
-              () {
-                SnackbarUtils.showSuccess(
-                  context,
-                  "Report generation coming soon!",
-                );
+              () async {
+                final userData = authProvider.userData;
+                if (userData == null) return;
+
+                final attendance =
+                    userData['attendance'] as Map<String, dynamic>? ?? {};
+                final int totalWorkingHours =
+                    userData['totalWorkingHours'] ?? 0;
+                int presentDays =
+                    attendance.values.where((v) => v == 'Present').length;
+                int totalRecorded = attendance.length;
+
+                double percentage = totalWorkingHours > 0
+                    ? (presentDays / totalWorkingHours) * 100
+                    : (totalRecorded == 0
+                        ? 0
+                        : (presentDays / totalRecorded) * 100);
+
+                try {
+                  await PdfReportService.generateAttendanceReport(
+                    name: userData['name'] ?? 'Student',
+                    rollNumber: userData['rollNumber'] ?? 'N/A',
+                    department: userData['department'] ?? 'N/A',
+                    semester: userData['semester'] ?? 'N/A',
+                    attendance: attendance,
+                    percentage: percentage,
+                  );
+                } catch (e) {
+                  if (context.mounted) {
+                    SnackbarUtils.showError(
+                        context, "Error generating PDF: $e");
+                  }
+                }
               },
             ),
             const SizedBox(height: 40),

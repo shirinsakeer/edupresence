@@ -1,11 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:google_generative_ai/google_generative_ai.dart';
+import 'package:edupresence/services/groq_service.dart';
 
 class ChatProvider with ChangeNotifier {
-  final String _apiKey = "AIzaSyCdG3cI6gUvCWmVIehyI0WFpmjgV6so_h8";
-  late GenerativeModel _model;
-  late ChatSession _chat;
-
   List<Map<String, String>> _messages = [];
   List<Map<String, String>> get messages => _messages;
 
@@ -13,13 +9,7 @@ class ChatProvider with ChangeNotifier {
   bool get isTyping => _isTyping;
 
   ChatProvider() {
-    _model = GenerativeModel(
-      model: 'gemini-1.5-flash',
-      apiKey: _apiKey,
-      systemInstruction: Content.system(
-          "You are the EduPresence Assistant. You help teachers manage attendance and analyze data, and help students with their academic progress. Be concise, professional, and encouraging."),
-    );
-    _chat = _model.startChat();
+    // Initializing with an empty list or a welcome message
   }
 
   Future<void> sendMessage(String text) async {
@@ -30,8 +20,23 @@ class ChatProvider with ChangeNotifier {
     notifyListeners();
 
     try {
-      final response = await _chat.sendMessage(Content.text(text));
-      _messages.add({"role": "bot", "text": response.text ?? "No response"});
+      // Prepare history for Groq
+      final List<Map<String, String>> history = _messages
+          .map((m) => {
+                'role': m['role'] == 'bot' ? 'assistant' : 'user',
+                'text': m['text'] ?? '',
+              })
+          .toList();
+
+      // Add system instruction if needed as the first message
+      history.insert(0, {
+        'role': 'system',
+        'text':
+            "You are the EduPresence Assistant. You help teachers manage attendance and analyze data, and help students with their academic progress. Be concise, professional, and encouraging."
+      });
+
+      final responseText = await GroqService.getChatResponse(history);
+      _messages.add({"role": "bot", "text": responseText});
     } catch (e) {
       _messages.add({"role": "bot", "text": "Error: ${e.toString()}"});
     } finally {
@@ -42,7 +47,6 @@ class ChatProvider with ChangeNotifier {
 
   void clearChat() {
     _messages.clear();
-    _chat = _model.startChat();
     notifyListeners();
   }
 }
