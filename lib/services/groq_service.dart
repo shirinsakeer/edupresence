@@ -1,11 +1,12 @@
 import 'dart:convert';
+import 'package:edupresence/services/api_keys.dart';
 import 'package:http/http.dart' as http;
 
 class GroqService {
   static const String _baseUrl =
       'https://api.groq.com/openai/v1/chat/completions';
   // Note: For a production app, this should be in an environment variable or fetched from a secure config.
-  static const String _apiKey = '';
+  static const String _apiKey = ApiKeys.groqApiKey;
 
   static Future<String> getChatResponse(
       List<Map<String, String>> messages) async {
